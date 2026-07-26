@@ -1,0 +1,9 @@
+<Solution>
+  <Project Path="SpatialSimulator.Agents/SpatialSimulator.Agents.csproj" />
+  <Project Path="SpatialSimulator.Application/SpatialSimulator.Application.csproj" />
+  <Project Path="SpatialSimulator.Console/SpatialSimulator.Console.csproj" />
+  <Project Path="SpatialSimulator.Domain/SpatialSimulator.Domain.csproj" />
+  <Project Path="SpatialSimulator.Infrastructure/SpatialSimulator.Infrastructure.csproj" />
+  <Project Path="SpatialSimulator.Ingestion/SpatialSimulator.Ingestion.csproj" />
+  <Project Path="SpatialSimulator.Tests/SpatialSimulator.Tests.csproj" />
+</Solution>

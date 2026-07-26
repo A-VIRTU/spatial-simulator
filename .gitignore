@@ -1,0 +1,10 @@
+## Ignore Visual Studio / .NET build artifacts
+bin/
+obj/
+.vs/
+.idea/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.DS_Store
