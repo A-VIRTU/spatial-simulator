@@ -3,32 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sémantický prostorový simulátor – Runářov</title>
+    <title>Administrace Sémantického Prostorového Simulátoru</title>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
-    <!-- Leaflet.js Map CSS & JS -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <!-- Leaflet.js CSS & JS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
-    <!-- SignalR Client JS -->
+    <!-- SignalR JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="app-container">
+    <div class="admin-app">
         <!-- Top Navbar -->
-        <header class="navbar">
-            <div class="navbar-brand">
-                <div class="logo-icon">🌐</div>
+        <header class="admin-header">
+            <div class="header-brand">
+                <div class="brand-logo">🌐</div>
                 <div>
-                    <h1>Sémantický prostorový simulátor</h1>
-                    <span class="subtitle">Pilotní model: Runářov (k.ú. 743615, 110 budov)</span>
+                    <h1 class="brand-title">Administrace Prostorového Simulátoru</h1>
+                    <span class="brand-subtitle">Pilotní lokalita: Runářov (k.ú. 743615, 110 budov RÚIAN)</span>
                 </div>
             </div>
-            <div class="navbar-actions">
-                <div class="status-badge" id="sim-status">
-                    <span class="status-dot"></span> <span id="status-text">Simulace spuštěna (MongoDB)</span>
+            <div class="header-actions">
+                <div class="status-indicator" id="sim-status">
+                    <span class="status-dot"></span> <span id="status-text">MongoDB připojen (2dsphere index)</span>
                 </div>
                 <button class="btn btn-primary" id="btn-step-agent">
                     <span>⚡ Krok agenty Jany</span>
@@ -39,86 +39,155 @@
             </div>
         </header>
 
-        <!-- View Switcher Tabs -->
-        <nav class="tabs-bar">
-            <button class="tab-btn active" data-tab="tab-map">🗺️ Mapa lokality (MapView)</button>
-            <button class="tab-btn" data-tab="tab-floorplan">🏢 Půdorys budovy (FloorPlanView)</button>
-            <button class="tab-btn" data-tab="tab-tree">🌳 Strom obsahování (TreeExplorer)</button>
-            <button class="tab-btn" data-tab="tab-timeline">📜 Časová osa GTU (Timeline)</button>
-        </nav>
-
-        <!-- Main Workspace Layout -->
-        <main class="main-content">
-            <div class="viewport-panel">
-                <!-- Tab 1: MapView -->
-                <div class="tab-content active" id="tab-map">
-                    <div id="map"></div>
-                    <div class="map-legend">
-                        <div class="legend-item"><span class="legend-color verified"></span> Verified / Katastr</div>
-                        <div class="legend-item"><span class="legend-color detailed"></span> Detailed / OSM</div>
-                        <div class="legend-item"><span class="legend-color outlined"></span> Outlined / Pravidlo</div>
-                        <div class="legend-item"><span class="legend-color agent"></span> Agent (Jana Novotná)</div>
-                    </div>
+        <!-- Main Admin Workspace -->
+        <div class="admin-workspace">
+            <!-- Left Sidebar: Containment Tree Navigation -->
+            <aside class="admin-sidebar">
+                <div class="sidebar-header">
+                    <h2>🌳 Prostorový strom</h2>
+                    <input type="text" id="tree-search" placeholder="Hledat v hierarchii..." class="search-input">
                 </div>
-
-                <!-- Tab 2: FloorPlanView -->
-                <div class="tab-content" id="tab-floorplan">
-                    <div class="floorplan-controls">
-                        <label for="building-select">Budova:</label>
-                        <select id="building-select" class="select-input">
-                            <option value="building_cp_23">Čp. 23 (Rodinný dům)</option>
-                        </select>
-                        <label for="floor-select">Podlaží:</label>
-                        <select id="floor-select" class="select-input">
-                            <option value="floor_building_cp_23_1">Přízemí</option>
-                        </select>
-                    </div>
-                    <div class="floorplan-canvas-container">
-                        <svg id="floorplan-svg" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid meet">
-                            <!-- SVG Floorplan dynamically rendered via JS -->
-                        </svg>
-                    </div>
-                </div>
-
-                <!-- Tab 3: TreeExplorer -->
-                <div class="tab-content" id="tab-tree">
-                    <div class="tree-header">
-                        <h3>Hierarchie containment stromu (od sídla po sirky v kapse)</h3>
-                        <span class="tree-hint">Kliknutím rozbalte uzly nebo vyberte entitu pro inspekci</span>
-                    </div>
-                    <div class="tree-view" id="tree-container">
-                        <!-- Containment tree dynamically rendered via JS -->
-                    </div>
-                </div>
-
-                <!-- Tab 4: Timeline -->
-                <div class="tab-content" id="tab-timeline">
-                    <div class="timeline-header">
-                        <h3>Globální časová osa událostí (GTU Stream)</h3>
-                        <div class="timeline-scrubber">
-                            <input type="text" id="event-filter" placeholder="Filtr událostí..." class="text-input">
-                        </div>
-                    </div>
-                    <div class="events-list" id="events-container">
-                        <!-- Events dynamically rendered via JS -->
-                    </div>
-                </div>
-            </div>
-
-            <!-- Right Sidebar: Inspector Panel -->
-            <aside class="inspector-panel">
-                <div class="inspector-header">
-                    <h2>🔍 Inspekční panel</h2>
-                    <span class="entity-type-badge" id="insp-type">Vyberte entitu</span>
-                </div>
-                <div class="inspector-body" id="insp-body">
-                    <div class="empty-state">
-                        <div class="empty-icon">👈</div>
-                        <p>Klikněte na budovu v mapě, místnost v půdorysu nebo položku ve stromu pro zobrazení detailních atributů a paměti agenta.</p>
-                    </div>
+                <div class="sidebar-tree" id="tree-container">
+                    <!-- Dynamic Containment Tree rendered via JS -->
                 </div>
             </aside>
-        </main>
+
+            <!-- Right Content Area -->
+            <main class="admin-content">
+                <!-- Breadcrumb Bar -->
+                <nav class="breadcrumb-bar" id="breadcrumb-container">
+                    <span class="breadcrumb-item">Runářov</span>
+                </nav>
+
+                <!-- Entity Header -->
+                <div class="entity-title-bar">
+                    <div class="entity-title-group">
+                        <span class="entity-type-tag" id="ent-type">Settlement</span>
+                        <h2 id="ent-name">Runářov</h2>
+                        <span class="entity-id-code" id="ent-id">settlement_runarov</span>
+                    </div>
+                </div>
+
+                <!-- Entity Tabs Navigation -->
+                <nav class="entity-tabs">
+                    <button class="tab-item active" data-panel="panel-detail">📋 Detail & Atributy</button>
+                    <button class="tab-item" data-panel="panel-map">🗺️ Mapa lokality (MapView)</button>
+                    <button class="tab-item" data-panel="panel-floorplan">🏢 Půdorys podlaží (FloorPlanView)</button>
+                    <button class="tab-item" data-panel="panel-agent">🤖 Agent & Paměť (Stanford Memory)</button>
+                    <button class="tab-item" data-panel="panel-timeline">📜 Časová osa GTU (Stream)</button>
+                </nav>
+
+                <!-- View Panels -->
+                <div class="panels-container">
+                    <!-- Panel 1: Detail & Atributy -->
+                    <div class="view-panel active" id="panel-detail">
+                        <div class="detail-grid">
+                            <div class="card shadow-card">
+                                <h3>📌 Sémantika & Popis</h3>
+                                <p id="ent-desc" class="desc-text">Načítám popis...</p>
+                                <div class="tag-box" id="ent-tags"></div>
+                            </div>
+                            <div class="card shadow-card">
+                                <h3>🌐 Prostorové ukotvení</h3>
+                                <div class="kv-table" id="ent-spatial-kv"></div>
+                            </div>
+                            <div class="card shadow-card">
+                                <h3>📊 Provenience & Generace</h3>
+                                <div class="kv-table" id="ent-prov-kv"></div>
+                            </div>
+                            <div class="card shadow-card span-full">
+                                <h3>📦 Dětské uzly v této větvi (<span id="children-count">0</span>)</h3>
+                                <div class="table-wrapper">
+                                    <table class="data-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Název</th>
+                                                <th>Typ</th>
+                                                <th>ID</th>
+                                                <th>Stav generace</th>
+                                                <th>Akce</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="children-table-body">
+                                            <!-- Children rows populated via JS -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Panel 2: Mapa lokality -->
+                    <div class="view-panel" id="panel-map">
+                        <div class="map-viewport">
+                            <div id="map"></div>
+                            <div class="map-overlay-legend">
+                                <div class="legend-chip verified"><span class="chip-dot"></span> Katastr / RÚIAN (Verified)</div>
+                                <div class="legend-chip detailed"><span class="chip-dot"></span> OSM (Detailed)</div>
+                                <div class="legend-chip outlined"><span class="chip-dot"></span> Šablona (Outlined)</div>
+                                <div class="legend-chip agent"><span class="chip-dot"></span> Agent (Jana Novotná)</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Panel 3: Půdorys podlaží -->
+                    <div class="view-panel" id="panel-floorplan">
+                        <div class="floorplan-toolbar">
+                            <label>Objekt:</label>
+                            <select id="fp-building-select" class="admin-select">
+                                <option value="building_cp_23">Čp. 23 (Rodinný dům)</option>
+                            </select>
+                            <label>Podlaží:</label>
+                            <select id="fp-floor-select" class="admin-select">
+                                <option value="floor_building_cp_23_1">1. NP – Přízemí</option>
+                            </select>
+                        </div>
+                        <div class="floorplan-stage">
+                            <svg id="floorplan-svg" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid meet">
+                                <!-- Dynamic FloorPlan SVG -->
+                            </svg>
+                        </div>
+                    </div>
+
+                    <!-- Panel 4: Agent & Paměť -->
+                    <div class="view-panel" id="panel-agent">
+                        <div class="agent-layout">
+                            <div class="agent-card">
+                                <h3>🤖 Profil agenta</h3>
+                                <div id="agent-info-box" class="kv-table"></div>
+                                <div class="agent-controls">
+                                    <h4>⚡ Akce v prostředí</h4>
+                                    <div class="btn-group">
+                                        <button class="btn btn-secondary btn-sm" id="btn-take-matches">🖐️ Sebrat sirky</button>
+                                        <button class="btn btn-secondary btn-sm" id="btn-move-corridor">🚪 Přejít do chodby</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="memory-card">
+                                <h3>🧠 Paměťový stream (Stanford Retrieval)</h3>
+                                <div class="search-box">
+                                    <input type="text" id="memory-query-input" placeholder="Vyhledat v paměti agenta (např. sirky, oběd, klíč)..." class="search-input">
+                                    <button class="btn btn-primary btn-sm" id="btn-search-memory">Vyhledat vzpomínku</button>
+                                </div>
+                                <div class="memory-results" id="memory-results-container">
+                                    <!-- Memories populated via JS -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Panel 5: Časová osa GTU -->
+                    <div class="view-panel" id="panel-timeline">
+                        <div class="timeline-toolbar">
+                            <input type="text" id="timeline-filter" placeholder="Filtrovat události..." class="search-input">
+                        </div>
+                        <div class="timeline-stream" id="timeline-stream-container">
+                            <!-- Stream populated via JS -->
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
     </div>
 
     <script src="app.js"></script>

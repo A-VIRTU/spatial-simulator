@@ -2,7 +2,7 @@ let map = null;
 let entitiesStore = [];
 let edgesStore = [];
 let eventsStore = [];
-let selectedEntityId = null;
+let selectedEntityId = 'settlement_runarov';
 
 document.addEventListener('DOMContentLoaded', async () => {
     initTabs();
@@ -13,35 +13,30 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     document.getElementById('btn-reload').addEventListener('click', loadData);
     document.getElementById('btn-step-agent').addEventListener('click', executeAgentStep);
-    document.getElementById('building-select').addEventListener('change', renderFloorPlan);
-    document.getElementById('floor-select').addEventListener('change', renderFloorPlan);
+    document.getElementById('btn-search-memory').addEventListener('click', searchAgentMemories);
+    document.getElementById('btn-take-matches').addEventListener('click', () => triggerAgentAction('take_item', { item: 'item_sirky' }));
+    document.getElementById('btn-move-corridor').addEventListener('click', () => triggerAgentAction('move', { destination: 'room_corridor' }));
+
+    document.getElementById('tree-search').addEventListener('input', (e) => filterTree(e.target.value));
 });
 
-// Tab Switcher
+// Admin Sub-tabs switcher
 function initTabs() {
-    const tabs = document.querySelectorAll('.tab-btn');
+    const tabs = document.querySelectorAll('.tab-item');
     tabs.forEach(tab => {
         tab.addEventListener('click', () => {
             tabs.forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
 
             tab.classList.add('active');
-            const targetId = tab.dataset.tab;
-            const targetContent = document.getElementById(targetId);
-            if (targetContent) {
-                targetContent.classList.add('active');
-            }
+            const panelId = tab.dataset.panel;
+            const targetPanel = document.getElementById(panelId);
+            if (targetPanel) targetPanel.classList.add('active');
 
-            if (targetId === 'tab-map' && map) {
-                setTimeout(() => {
-                    map.invalidateSize();
-                }, 100);
-            } else if (targetId === 'tab-floorplan') {
+            if (panelId === 'panel-map' && map) {
+                setTimeout(() => map.invalidateSize(), 150);
+            } else if (panelId === 'panel-floorplan') {
                 renderFloorPlan();
-            } else if (targetId === 'tab-tree') {
-                renderTree();
-            } else if (targetId === 'tab-timeline') {
-                renderTimeline();
             }
         });
     });
@@ -49,17 +44,12 @@ function initTabs() {
 
 // Leaflet Map Initialization
 function initMap() {
-    // Runářov center coords: Lat 49.5427, Lon 16.8963
     map = L.map('map', { zoomControl: true }).setView([49.5427, 16.8963], 16);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
         attribution: '© OpenStreetMap contributors'
     }).addTo(map);
-
-    setTimeout(() => {
-        if (map) map.invalidateSize();
-    }, 300);
 }
 
 // Load Data from API
@@ -80,46 +70,188 @@ async function loadData() {
             eventsStore = await resEvents.json();
         }
 
-        renderMapMarkers();
         renderTree();
+        renderMapMarkers();
         renderTimeline();
-        if (selectedEntityId) selectEntity(selectedEntityId);
+        selectEntity(selectedEntityId);
     } catch (err) {
         console.error("Error loading data:", err);
     }
 }
 
-// Render Map Markers & Buildings
+// Render Left Sidebar Containment Tree
+function renderTree(filterQuery = '') {
+    const container = document.getElementById('tree-container');
+    if (!container) return;
+    container.innerHTML = '';
+
+    const root = entitiesStore.find(e => e.id === 'settlement_runarov');
+    if (!root) return;
+
+    container.appendChild(buildTreeNode(root, filterQuery.toLowerCase()));
+}
+
+function buildTreeNode(entity, filterQuery = '') {
+    const children = entitiesStore.filter(e => e.parentId === entity.id);
+
+    // If filtering, check if name matches or any child matches
+    if (filterQuery && !entity.name.toLowerCase().includes(filterQuery) && !children.some(c => c.name.toLowerCase().includes(filterQuery))) {
+        return document.createTextNode('');
+    }
+
+    const nodeEl = document.createElement('div');
+    nodeEl.className = 'tree-node';
+
+    const itemEl = document.createElement('div');
+    itemEl.className = `tree-item ${selectedEntityId === entity.id ? 'selected' : ''}`;
+    itemEl.innerHTML = `<span class="type-badge">${entity.type}</span> <span>${entity.name}</span>`;
+    itemEl.onclick = (e) => {
+        e.stopPropagation();
+        selectEntity(entity.id);
+    };
+
+    nodeEl.appendChild(itemEl);
+
+    if (children.length > 0) {
+        const childrenContainer = document.createElement('div');
+        childrenContainer.className = 'tree-children';
+        children.forEach(child => {
+            const childNode = buildTreeNode(child, filterQuery);
+            if (childNode) childrenContainer.appendChild(childNode);
+        });
+        nodeEl.appendChild(childrenContainer);
+    }
+
+    return nodeEl;
+}
+
+function filterTree(query) {
+    renderTree(query);
+}
+
+// Select Entity & Fill Main View
+function selectEntity(id) {
+    selectedEntityId = id;
+    const entity = entitiesStore.find(e => e.id === id);
+    if (!entity) return;
+
+    // 1. Update Title Bar
+    document.getElementById('ent-name').textContent = entity.name;
+    document.getElementById('ent-type').textContent = entity.type;
+    document.getElementById('ent-id').textContent = entity.id;
+
+    // 2. Update Breadcrumbs
+    renderBreadcrumbs(entity);
+
+    // 3. Update Detail & Attributes Panel
+    document.getElementById('ent-desc').textContent = entity.semantic?.description || 'Bez textového popisu.';
+
+    const tagsBox = document.getElementById('ent-tags');
+    tagsBox.innerHTML = (entity.semantic?.tags || []).map(t => `<span class="tag-chip">${t}</span>`).join(' ') || '<span style="color:var(--text-muted); font-size:0.8rem;">Bez tagů</span>';
+
+    const spatialKv = document.getElementById('ent-spatial-kv');
+    spatialKv.innerHTML = `
+        <span class="kv-label">Rámec:</span><span class="kv-value">${entity.spatial?.frame || 'World'}</span>
+        <span class="kv-label">GPS Lat:</span><span class="kv-value">${entity.spatial?.globalAnchor?.lat || 'N/A'}</span>
+        <span class="kv-label">GPS Lon:</span><span class="kv-value">${entity.spatial?.globalAnchor?.lon || 'N/A'}</span>
+        <span class="kv-label">Hloubka stromu:</span><span class="kv-value">${entity.depth}</span>
+    `;
+
+    const provKv = document.getElementById('ent-prov-kv');
+    provKv.innerHTML = `
+        <span class="kv-label">Zdroj:</span><span class="kv-value">${entity.provenance?.source || 'Katastr (RÚIAN)'}</span>
+        <span class="kv-label">Confidence:</span><span class="kv-value">${entity.provenance?.confidence || 1.0}</span>
+        <span class="kv-label">Stav generace:</span><span class="kv-value">${entity.generation?.state || 'Verified'}</span>
+        <span class="kv-label">Metoda:</span><span class="kv-value">${entity.generation?.method || 'cadastre'}</span>
+    `;
+
+    // 4. Update Children Table
+    renderChildrenTable(entity.id);
+
+    // 5. Update Agent Panel if Agent
+    renderAgentInfo();
+
+    // 6. Auto-center map if entity has GPS anchor
+    if (entity.spatial?.globalAnchor && map) {
+        map.panTo([entity.spatial.globalAnchor.lat, entity.spatial.globalAnchor.lon]);
+    }
+
+    // Highlight selected item in tree
+    document.querySelectorAll('.tree-item').forEach(el => el.classList.remove('selected'));
+}
+
+// Render Breadcrumb Bar
+function renderBreadcrumbs(entity) {
+    const container = document.getElementById('breadcrumb-container');
+    if (!container) return;
+    container.innerHTML = '';
+
+    const chain = [];
+    let current = entity;
+    while (current) {
+        chain.unshift(current);
+        current = entitiesStore.find(e => e.id === current.parentId);
+    }
+
+    chain.forEach((item, idx) => {
+        const span = document.createElement('span');
+        span.className = 'breadcrumb-item';
+        span.textContent = item.name;
+        span.onclick = () => selectEntity(item.id);
+        container.appendChild(span);
+
+        if (idx < chain.length - 1) {
+            const sep = document.createElement('span');
+            sep.textContent = ' / ';
+            sep.style.color = 'var(--text-muted)';
+            container.appendChild(sep);
+        }
+    });
+}
+
+// Render Children Table
+function renderChildrenTable(parentId) {
+    const tbody = document.getElementById('children-table-body');
+    const countSpan = document.getElementById('children-count');
+    if (!tbody) return;
+
+    const children = entitiesStore.filter(e => e.parentId === parentId);
+    countSpan.textContent = children.length;
+    tbody.innerHTML = '';
+
+    if (children.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:var(--text-muted);">Žádné dětské uzly ve větvi.</td></tr>';
+        return;
+    }
+
+    children.forEach(child => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td><strong>${child.name}</strong></td>
+            <td><span class="type-badge">${child.type}</span></td>
+            <td style="font-family:var(--font-mono); font-size:0.75rem;">${child.id}</td>
+            <td>${child.generation?.state || 'Verified'}</td>
+            <td><button class="btn btn-secondary btn-sm" onclick="selectEntity('${child.id}')">🔍 Detail</button></td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+// Render Map Markers & Connectivity Edges
 function renderMapMarkers() {
     if (!map) return;
 
-    map.eachLayer(layer => {
-        if (layer instanceof L.Marker || layer instanceof L.CircleMarker || layer instanceof L.Polyline) {
-            map.removeLayer(layer);
-        }
-    });
-
-    // Render 110 Buildings and Places
     entitiesStore.forEach(entity => {
-        if (entity.spatial && entity.spatial.globalAnchor) {
+        if (entity.spatial?.globalAnchor) {
             const anchor = entity.spatial.globalAnchor;
-            const lat = anchor.lat;
-            const lon = anchor.lon;
-
-            let color = '#38bdf8'; // Default cyan
+            let color = '#38bdf8';
             let radius = 7;
 
-            if (entity.type === 'Building') {
-                color = entity.generation?.state === 3 ? '#38bdf8' : (entity.generation?.state === 2 ? '#4ade80' : '#fbbf24');
-            } else if (entity.type === 'Place') {
-                color = '#c084fc';
-                radius = 9;
-            } else if (entity.type === 'Agent') {
-                color = '#f43f5e';
-                radius = 11;
-            }
+            if (entity.type === 'Building') color = '#38bdf8';
+            else if (entity.type === 'Place') { color = '#a855f7'; radius = 9; }
+            else if (entity.type === 'Agent') { color = '#f43f5e'; radius = 11; }
 
-            const marker = L.circleMarker([lat, lon], {
+            const marker = L.circleMarker([anchor.lat, anchor.lon], {
                 radius: radius,
                 fillColor: color,
                 color: '#ffffff',
@@ -133,74 +265,51 @@ function renderMapMarkers() {
         }
     });
 
-    // Render Road Network Edges
     edgesStore.forEach(edge => {
-        const fromEntity = entitiesStore.find(e => e.id === edge.fromId);
-        const toEntity = entitiesStore.find(e => e.id === edge.toId);
-
-        if (fromEntity?.spatial?.globalAnchor && toEntity?.spatial?.globalAnchor) {
-            const p1 = [fromEntity.spatial.globalAnchor.lat, fromEntity.spatial.globalAnchor.lon];
-            const p2 = [toEntity.spatial.globalAnchor.lat, toEntity.spatial.globalAnchor.lon];
+        const fromE = entitiesStore.find(e => e.id === edge.fromId);
+        const toE = entitiesStore.find(e => e.id === edge.toId);
+        if (fromE?.spatial?.globalAnchor && toE?.spatial?.globalAnchor) {
+            const p1 = [fromE.spatial.globalAnchor.lat, fromE.spatial.globalAnchor.lon];
+            const p2 = [toE.spatial.globalAnchor.lat, toE.spatial.globalAnchor.lon];
 
             L.polyline([p1, p2], {
-                color: edge.kind === 'Road' ? '#38bdf8' : '#94a3b8',
-                weight: edge.kind === 'Road' ? 3 : 2,
-                dashArray: edge.kind === 'Path' ? '4, 4' : null,
-                opacity: 0.7
+                color: '#38bdf8',
+                weight: 3,
+                opacity: 0.6
             }).addTo(map);
         }
     });
 }
 
-// Render SVG FloorPlan for selected building
+// Render SVG FloorPlan
 function renderFloorPlan() {
     const svg = document.getElementById('floorplan-svg');
     if (!svg) return;
     svg.innerHTML = '';
 
-    // Draw house container border
     const houseRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-    houseRect.setAttribute('x', '40');
-    houseRect.setAttribute('y', '40');
-    houseRect.setAttribute('width', '720');
-    houseRect.setAttribute('height', '520');
-    houseRect.setAttribute('rx', '12');
-    houseRect.setAttribute('fill', '#1e293b');
-    houseRect.setAttribute('stroke', '#374151');
-    houseRect.setAttribute('stroke-width', '4');
+    houseRect.setAttribute('x', '40'); houseRect.setAttribute('y', '40');
+    houseRect.setAttribute('width', '720'); houseRect.setAttribute('height', '520');
+    houseRect.setAttribute('rx', '12'); houseRect.setAttribute('fill', '#1e293b');
+    houseRect.setAttribute('stroke', '#374151'); houseRect.setAttribute('stroke-width', '4');
     svg.appendChild(houseRect);
 
-    // Get rooms generated for Čp. 23 přízemí
-    const floorRooms = entitiesStore.filter(e => e.parentId === 'floor_building_cp_23_1' && e.type === 'Room');
     const defaultRooms = [
         { name: 'Vstupní chodba s věšákem', x: 70, y: 70, w: 220, h: 220 },
         { name: 'Kuchyň s oknem do dvora', x: 310, y: 70, w: 430, h: 220 },
-        { name: 'Obývací pokoj', x: 70, y: 310, w: 350, h: 230 },
+        { name: 'Obývací pokoj s kamny', x: 70, y: 310, w: 350, h: 230 },
         { name: 'Ložnice', x: 440, y: 310, w: 300, h: 230 }
     ];
 
-    const roomsToRender = floorRooms.length > 0 ? floorRooms.map((r, i) => ({
-        ...defaultRooms[i % defaultRooms.length],
-        id: r.id,
-        name: r.name,
-        entity: r
-    })) : defaultRooms;
-
-    roomsToRender.forEach(r => {
+    defaultRooms.forEach(r => {
         const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-
         const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-        rect.setAttribute('x', r.x);
-        rect.setAttribute('y', r.y);
-        rect.setAttribute('width', r.w);
-        rect.setAttribute('height', r.h);
-        rect.setAttribute('rx', '8');
-        rect.setAttribute('class', 'room-rect');
-        rect.onclick = () => { if (r.id) selectEntity(r.id); };
+        rect.setAttribute('x', r.x); rect.setAttribute('y', r.y);
+        rect.setAttribute('width', r.w); rect.setAttribute('height', r.h);
+        rect.setAttribute('rx', '8'); rect.setAttribute('class', 'room-rect');
 
         const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-        text.setAttribute('x', r.x + r.w / 2);
-        text.setAttribute('y', r.y + r.h / 2);
+        text.setAttribute('x', r.x + r.w / 2); text.setAttribute('y', r.y + r.h / 2);
         text.setAttribute('class', 'room-label');
         text.textContent = r.name;
 
@@ -209,142 +318,82 @@ function renderFloorPlan() {
         svg.appendChild(group);
     });
 
-    // Render Agent Jana inside Kitchen
     const agent = entitiesStore.find(e => e.type === 'Agent');
     if (agent) {
-        const agentDot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-        agentDot.setAttribute('cx', '525');
-        agentDot.setAttribute('cy', '180');
-        agentDot.setAttribute('r', '14');
-        agentDot.setAttribute('class', 'agent-dot');
-        agentDot.onclick = () => selectEntity(agent.id);
+        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        circle.setAttribute('cx', '525'); circle.setAttribute('cy', '180'); circle.setAttribute('r', '14');
+        circle.setAttribute('fill', '#f43f5e'); circle.setAttribute('stroke', '#fff'); circle.setAttribute('stroke-width', '2.5');
 
-        const agentText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-        agentText.setAttribute('x', '525');
-        agentText.setAttribute('y', '215');
-        agentText.setAttribute('class', 'room-label');
-        agentText.setAttribute('font-size', '13px');
-        agentText.textContent = agent.name;
+        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        text.setAttribute('x', '525'); text.setAttribute('y', '215');
+        text.setAttribute('class', 'room-label'); text.setAttribute('font-size', '13px');
+        text.textContent = agent.name;
 
-        svg.appendChild(agentDot);
-        svg.appendChild(agentText);
+        svg.appendChild(circle);
+        svg.appendChild(text);
     }
 }
 
-// Render Containment Tree Explorer
-function renderTree() {
-    const container = document.getElementById('tree-container');
-    if (!container) return;
-    container.innerHTML = '';
+// Render Agent Info
+function renderAgentInfo() {
+    const agent = entitiesStore.find(e => e.type === 'Agent');
+    const container = document.getElementById('agent-info-box');
+    if (!agent || !container) return;
 
-    const root = entitiesStore.find(e => e.id === 'settlement_runarov');
-    if (!root) return;
-
-    container.appendChild(buildTreeNode(root));
+    container.innerHTML = `
+        <span class="kv-label">Jméno:</span><span class="kv-value">${agent.name}</span>
+        <span class="kv-label">Persona:</span><span class="kv-value">${agent.agent?.personaRef || 'PMJ Jana Novotná'}</span>
+        <span class="kv-label">Aktuální cíl:</span><span class="kv-value">${agent.agent?.currentGoal || 'Uvařit oběd'}</span>
+        <span class="kv-label">Poloha:</span><span class="kv-value">${agent.parentId || 'room_kitchen'}</span>
+    `;
 }
 
-function buildTreeNode(entity) {
-    const nodeEl = document.createElement('div');
-    nodeEl.className = 'tree-node';
-
-    const contentEl = document.createElement('div');
-    contentEl.className = `tree-node-content ${selectedEntityId === entity.id ? 'selected' : ''}`;
-    contentEl.innerHTML = `<span class="node-type">${entity.type}</span> <strong>${entity.name}</strong>`;
-    contentEl.onclick = (e) => {
-        e.stopPropagation();
-        selectEntity(entity.id);
-    };
-
-    nodeEl.appendChild(contentEl);
-
-    const children = entitiesStore.filter(e => e.parentId === entity.id);
-    if (children.length > 0) {
-        const childrenContainer = document.createElement('div');
-        childrenContainer.className = 'tree-children';
-        children.forEach(child => {
-            childrenContainer.appendChild(buildTreeNode(child));
-        });
-        nodeEl.appendChild(childrenContainer);
-    }
-
-    return nodeEl;
-}
-
-// Render GTU Timeline
-function renderTimeline() {
-    const container = document.getElementById('events-container');
+// Stanford Agent Memory Search
+async function searchAgentMemories() {
+    const query = document.getElementById('memory-query-input').value;
+    const container = document.getElementById('memory-results-container');
     if (!container) return;
+
+    const filtered = eventsStore.filter(e => !query || e.text.toLowerCase().includes(query.toLowerCase()));
     container.innerHTML = '';
 
-    if (eventsStore.length === 0) {
-        container.innerHTML = '<p style="color:var(--text-secondary); text-align:center;">Zatím nebyly zaznamenány žádné události.</p>';
+    if (filtered.length === 0) {
+        container.innerHTML = '<p style="color:var(--text-muted); font-size:0.85rem;">Žádné paměťové záznamy neodpovídají dotazu.</p>';
         return;
     }
 
-    eventsStore.forEach(evt => {
-        const card = document.createElement('div');
-        card.className = 'event-card';
-        const ts = new Date(evt.ts).toLocaleTimeString();
-        card.innerHTML = `
-            <div class="event-meta">
-                <span>[${evt.kind}]</span>
-                <span>${ts}</span>
-            </div>
-            <div class="event-text">${evt.text}</div>
+    filtered.forEach(evt => {
+        const item = document.createElement('div');
+        item.className = 'memory-item';
+        item.innerHTML = `
+            <span class="memory-score">Skóre: ${(evt.importance || 8.0).toFixed(1)}</span>
+            <div style="font-size:0.85rem;">${evt.text}</div>
+            <div style="font-size:0.7rem; color:var(--text-muted); margin-top:0.25rem;">Čas: ${new Date(evt.ts).toLocaleTimeString()}</div>
         `;
-        container.appendChild(card);
+        container.appendChild(item);
     });
 }
 
-// Select Entity & Fill Inspector Panel
-function selectEntity(id) {
-    selectedEntityId = id;
-    const entity = entitiesStore.find(e => e.id === id);
-    if (!entity) return;
+// Render Timeline Stream
+function renderTimeline() {
+    const container = document.getElementById('timeline-stream-container');
+    if (!container) return;
+    container.innerHTML = '';
 
-    document.getElementById('insp-type').textContent = entity.type;
-
-    const body = document.getElementById('insp-body');
-    const tags = (entity.semantic?.tags || []).map(t => `<span class="tag-chip">${t}</span>`).join(' ');
-
-    let extraHtml = '';
-    if (entity.agent) {
-        extraHtml = `
-            <div class="info-section">
-                <h4>🤖 Stav agenty</h4>
-                <p><strong>Persona:</strong> ${entity.agent.personaRef}</p>
-                <p><strong>Aktuální cíl:</strong> ${entity.agent.currentGoal || 'Nemá cíl'}</p>
+    eventsStore.forEach(evt => {
+        const el = document.createElement('div');
+        el.className = 'timeline-event';
+        el.innerHTML = `
+            <div style="font-size:0.75rem; color:var(--text-muted); display:flex; justify-space-between;">
+                <span>[${evt.kind}]</span><span>${new Date(evt.ts).toLocaleTimeString()}</span>
             </div>
+            <div style="margin-top:0.25rem; font-size:0.85rem;">${evt.text}</div>
         `;
-    }
-
-    body.innerHTML = `
-        <div class="info-section">
-            <h3 style="font-family:var(--font-heading); font-size:1.2rem; margin-bottom:0.5rem;">${entity.name}</h3>
-            <p style="color:var(--text-secondary); font-size:0.85rem;">${entity.semantic?.description || 'Bez popisu.'}</p>
-        </div>
-
-        <div class="info-section">
-            <h4>📌 Atributy & Stav</h4>
-            <div class="info-grid">
-                <span class="info-label">ID:</span><span class="info-value">${entity.id}</span>
-                <span class="info-label">Stav generace:</span><span class="info-value">${entity.generation?.state || 'N/A'}</span>
-                <span class="info-label">Zdroj:</span><span class="info-value">${entity.provenance?.source || 'N/A'} (Jistota: ${entity.provenance?.confidence || 1.0})</span>
-            </div>
-        </div>
-
-        <div class="info-section">
-            <h4>🏷️ Tagy</h4>
-            <div class="tag-cloud">${tags || 'Žádné tagy'}</div>
-        </div>
-
-        ${extraHtml}
-    `;
-
-    document.querySelectorAll('.tree-node-content').forEach(el => el.classList.remove('selected'));
+        container.appendChild(el);
+    });
 }
 
-// Execute Agent Step Action
+// Execute Agent Step
 async function executeAgentStep() {
     try {
         const btn = document.getElementById('btn-step-agent');
@@ -365,21 +414,18 @@ async function executeAgentStep() {
     }
 }
 
-// SignalR Real-time Updates
+function triggerAgentAction(action, payload) {
+    alert(`Akce ${action} byla odeslána.`);
+}
+
+// SignalR Real-time
 function initSignalR() {
     try {
-        const connection = new signalR.HubConnectionBuilder()
-            .withUrl("/hubs/simulation")
-            .withAutomaticReconnect()
-            .build();
-
+        const connection = new signalR.HubConnectionBuilder().withUrl("/hubs/simulation").withAutomaticReconnect().build();
         connection.on("EventRecorded", (evt) => {
             eventsStore.unshift(evt);
             renderTimeline();
         });
-
-        connection.start().catch(err => console.error("SignalR connection error:", err));
-    } catch (e) {
-        console.log("SignalR client not initialized.");
-    }
+        connection.start().catch(err => console.error(err));
+    } catch (e) {}
 }
