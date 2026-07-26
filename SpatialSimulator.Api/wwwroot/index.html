@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sémantický prostorový simulátor – Runářov</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
+    <!-- Leaflet.js Map CSS & JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+    <!-- SignalR Client JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Top Navbar -->
+        <header class="navbar">
+            <div class="navbar-brand">
+                <div class="logo-icon">🌐</div>
+                <div>
+                    <h1>Sémantický prostorový simulátor</h1>
+                    <span class="subtitle">Pilotní model: Runářov (k.ú. 743615, 110 budov)</span>
+                </div>
+            </div>
+            <div class="navbar-actions">
+                <div class="status-badge" id="sim-status">
+                    <span class="status-dot"></span> <span id="status-text">Simulace připravena</span>
+                </div>
+                <button class="btn btn-primary" id="btn-step-agent">
+                    <span>⚡ Exec Krok agenty Jany</span>
+                </button>
+                <button class="btn btn-secondary" id="btn-reload">
+                    <span>🔄 Obnovit data</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- View Switcher Tabs -->
+        <div class="tabs-bar">
+            <button class="tab-btn active" data-tab="tab-map">🗺️ Mapa lokality (MapView)</button>
+            <button class="tab-btn" data-tab="tab-floorplan">🏢 Půdorys budovy (FloorPlanView)</button>
+            <button class="tab-btn" data-tab="tab-tree">🌳 Strom obsahování (TreeExplorer)</button>
+            <button class="tab-btn" data-tab="tab-timeline">📜 Časová osa GTU (Timeline)</button>
+        </div>
+
+        <!-- Main Workspace Grid -->
+        <div class="main-content">
+            <div class="viewport-panel">
+                <!-- Tab 1: MapView -->
+                <div class="tab-content active" id="tab-map">
+                    <div id="map"></div>
+                    <div class="map-legend">
+                        <div class="legend-item"><span class="legend-color verified"></span> Verified / RÚIAN</div>
+                        <div class="legend-item"><span class="legend-color detailed"></span> Detailed / OSM</div>
+                        <div class="legend-item"><span class="legend-color outlined"></span> Outlined / Rule</div>
+                        <div class="legend-item"><span class="legend-color agent"></span> Agent (Jana)</div>
+                    </div>
+                </div>
+
+                <!-- Tab 2: FloorPlanView -->
+                <div class="tab-content" id="tab-floorplan">
+                    <div class="floorplan-controls">
+                        <label for="building-select">Budova:</label>
+                        <select id="building-select" class="select-input">
+                            <option value="building_cp_23">Čp. 23 (Rodinný dům)</option>
+                        </select>
+                        <label for="floor-select">Podlaží:</label>
+                        <select id="floor-select" class="select-input">
+                            <option value="floor_building_cp_23_1">Přízemí</option>
+                        </select>
+                    </div>
+                    <div class="floorplan-canvas-container">
+                        <svg id="floorplan-svg" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid meet">
+                            <!-- SVG Floorplan dynamically rendered via JS -->
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Tab 3: TreeExplorer -->
+                <div class="tab-content" id="tab-tree">
+                    <div class="tree-header">
+                        <h3>Hierarchie containment stromu (od sídla po sirky v kapse)</h3>
+                        <span class="tree-hint">Kliknutím rozbalte uzly nebo vyberte entitu</span>
+                    </div>
+                    <div class="tree-view" id="tree-container">
+                        <!-- Containment tree dynamically rendered via JS -->
+                    </div>
+                </div>
+
+                <!-- Tab 4: Timeline -->
+                <div class="tab-content" id="tab-timeline">
+                    <div class="timeline-header">
+                        <h3>Globální časová osa událostí (GTU Stream)</h3>
+                        <div class="timeline-scrubber">
+                            <label>Filtr:</label>
+                            <input type="text" id="event-filter" placeholder="Hledat v událostech..." class="text-input">
+                        </div>
+                    </div>
+                    <div class="events-list" id="events-container">
+                        <!-- Events dynamically rendered via JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Sidebar: Inspector Panel -->
+            <aside class="inspector-panel">
+                <div class="inspector-header">
+                    <h2>🔍 Inspekční panel</h2>
+                    <span class="entity-type-badge" id="insp-type">Vyberte entitu</span>
+                </div>
+                <div class="inspector-body" id="insp-body">
+                    <div class="empty-state">
+                        <div class="empty-icon">👈</div>
+                        <p>Klikněte na jakoukoliv budovu v mapě, místnost v půdorysu nebo položku ve stromu pro zobrazení detailních informací.</p>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.9" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SpatialSimulator.Domain\SpatialSimulator.Domain.csproj" />
+    <ProjectReference Include="..\SpatialSimulator.Infrastructure\SpatialSimulator.Infrastructure.csproj" />
+    <ProjectReference Include="..\SpatialSimulator.Application\SpatialSimulator.Application.csproj" />
+    <ProjectReference Include="..\SpatialSimulator.Ingestion\SpatialSimulator.Ingestion.csproj" />
+    <ProjectReference Include="..\SpatialSimulator.Agents\SpatialSimulator.Agents.csproj" />
+  </ItemGroup>
+
+</Project>

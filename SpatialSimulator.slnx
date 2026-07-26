@@ -1,5 +1,6 @@
 <Solution>
   <Project Path="SpatialSimulator.Agents/SpatialSimulator.Agents.csproj" />
+  <Project Path="SpatialSimulator.Api/SpatialSimulator.Api.csproj" />
   <Project Path="SpatialSimulator.Application/SpatialSimulator.Application.csproj" />
   <Project Path="SpatialSimulator.Console/SpatialSimulator.Console.csproj" />
   <Project Path="SpatialSimulator.Domain/SpatialSimulator.Domain.csproj" />
