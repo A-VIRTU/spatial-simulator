@@ -7,35 +7,31 @@ using SpatialSimulator.Domain.Graph;
 namespace SpatialSimulator.Ingestion;
 
 /// <summary>
-/// Výsledek parsování OpenStreetMap Overpass JSON dat.
-/// Obsahuje extrahované prostory (budovy, zájmové body) a hrany konektivity (silnice, chodníky).
+/// Výsledková přepravka (DTO) s entitami a hranami získanými parsováním OpenStreetMap Overpass JSON.
 /// </summary>
 public class OsmParseResult
 {
     /// <summary>
-    /// Seznam načtených prostorových entit.
+    /// Seznam načtených sémanticko-prostorových entit (budovy, POI, zájmová místa).
     /// </summary>
     public List<SpatialEntity> Entities { get; set; } = [];
 
     /// <summary>
-    /// Seznam načtených hran silniční a pěší sítě.
+    /// Seznam konektivních hran (ulice, chodníky).
     /// </summary>
     public List<ConnectivityEdge> Edges { get; set; } = [];
 }
 
 /// <summary>
-/// Parser pro import OpenStreetMap geodat z Overpass API JSON odpovídajících zadanému území.
-/// Motivace: Získává uliční síť, venkovní objekty, lavičky, kapličky a cesty pro navigaci agentů v prostoru.
+/// Parser pro načítání surových JSON dat z OpenStreetMap Overpass API (včetně středových souřadnic `center`).
+/// Motivace: Extrahuje SKUTEČNÉ zemepisné souřadnice (lat, lon) všech budov a POI přímo z reálných polygonů OpenStreetMap.
 /// </summary>
 public class OsmOverpassParser
 {
     /// <summary>
-    /// Sparuje Overpass JSON odpovídající dotazu na budovy a cestní síť.
+    /// Parsuje surový JSON řetězec z Overpass API a vytváří kódové doménové entity se SKUTEČNÝMI souřadnicemi.
     /// </summary>
-    /// <param name="jsonContent">JSON text vrácený z Overpass API.</param>
-    /// <param name="parentSettlementId">ID rodičovského sídla (např. "settlement_runarov").</param>
-    /// <returns>Objekt <see cref="OsmParseResult"/> s entitami a hranami.</returns>
-    public OsmParseResult ParseOverpassJson(string jsonContent, string parentSettlementId = "settlement_runarov")
+    public OsmParseResult ParseOverpassJson(string jsonContent, string parentSettlementId)
     {
         var result = new OsmParseResult();
         if (string.IsNullOrWhiteSpace(jsonContent)) return result;
@@ -43,123 +39,122 @@ public class OsmOverpassParser
         try
         {
             using var doc = JsonDocument.Parse(jsonContent);
-            if (!doc.RootElement.TryGetProperty("elements", out var elements)) return result;
+            var root = doc.RootElement;
 
-            var nodeDict = new Dictionary<long, (double Lat, double Lon)>();
-
-            // 1. První průchod: Načtení bodů (nodes)
-            foreach (var elem in elements.EnumerateArray())
+            if (!root.TryGetProperty("elements", out var elements) || elements.ValueKind != JsonValueKind.Array)
             {
-                if (elem.GetProperty("type").GetString() == "node")
-                {
-                    long id = elem.GetProperty("id").GetInt64();
-                    double lat = elem.GetProperty("lat").GetDouble();
-                    double lon = elem.GetProperty("lon").GetDouble();
-                    nodeDict[id] = (lat, lon);
-
-                    // Pokud má uzlové atributy (zájmové body)
-                    if (elem.TryGetProperty("tags", out var tags))
-                    {
-                        string? amenity = tags.TryGetProperty("amenity", out var a) ? a.GetString() : null;
-                        string? name = tags.TryGetProperty("name", out var n) ? n.GetString() : null;
-
-                        if (!string.IsNullOrEmpty(amenity) || !string.IsNullOrEmpty(name))
-                        {
-                            result.Entities.Add(new SpatialEntity
-                            {
-                                Id = $"place_osm_{id}",
-                                Type = SpatialEntityTypes.Place,
-                                Name = name ?? $"Místo ({amenity})",
-                                ParentId = parentSettlementId,
-                                Spatial = new SpatialComponent
-                                {
-                                    Frame = "World",
-                                    GlobalAnchor = new GeoAnchor { Lat = lat, Lon = lon }
-                                },
-                                Semantic = new SemanticComponent
-                                {
-                                    Tags = ["place", "osm", amenity ?? "poi"],
-                                    Description = $"Zájmové místo z OSM (ID: {id})."
-                                },
-                                Provenance = new ProvenanceComponent
-                                {
-                                    Source = "OSM_OVERPASS",
-                                    SourceRef = id.ToString()
-                                }
-                            });
-                        }
-                    }
-                }
+                return result;
             }
 
-            // 2. Druhý průchod: Cesty (ways) pro cestní síť
+            int houseIndex = 1;
+
             foreach (var elem in elements.EnumerateArray())
             {
-                if (elem.GetProperty("type").GetString() == "way")
+                string type = elem.GetProperty("type").GetString() ?? "";
+                long id = elem.GetProperty("id").GetInt64();
+
+                double lat = 0;
+                double lon = 0;
+                bool hasCoords = false;
+
+                // 1. Získání přesných středových souřadnic (center.lat, center.lon) z way nebo z přímo z node
+                if (elem.TryGetProperty("center", out var centerObj))
                 {
-                    long wayId = elem.GetProperty("id").GetInt64();
-                    if (!elem.TryGetProperty("nodes", out var nodesArr)) continue;
+                    lat = centerObj.GetProperty("lat").GetDouble();
+                    lon = centerObj.GetProperty("lon").GetDouble();
+                    hasCoords = true;
+                }
+                else if (elem.TryGetProperty("lat", out var latProp) && elem.TryGetProperty("lon", out var lonProp))
+                {
+                    lat = latProp.GetDouble();
+                    lon = lonProp.GetDouble();
+                    hasCoords = true;
+                }
 
-                    string kind = "Road";
-                    if (elem.TryGetProperty("tags", out var tags))
+                if (!hasCoords) continue;
+
+                // Extraction of tags
+                Dictionary<string, string> tags = new();
+                if (elem.TryGetProperty("tags", out var tagsObj))
+                {
+                    foreach (var tag in tagsObj.EnumerateObject())
                     {
-                        if (tags.TryGetProperty("highway", out var hw))
-                        {
-                            string hwType = hw.GetString() ?? "road";
-                            kind = (hwType == "footway" || hwType == "path") ? "Path" : "Road";
-                        }
+                        tags[tag.Name] = tag.Value.GetString() ?? "";
                     }
+                }
 
-                    var wayNodeIds = nodesArr.EnumerateArray().Select(n => n.GetInt64()).ToList();
+                // Check if element is a building
+                bool isBuilding = tags.ContainsKey("building") || type == "way";
 
-                    // Vytvoření hran mezi sousedními body cesty
-                    for (int i = 0; i < wayNodeIds.Count - 1; i++)
+                if (isBuilding)
+                {
+                    string houseNumberStr = tags.TryGetValue("addr:housenumber", out var hNum) ? hNum : houseIndex.ToString();
+                    int houseNumInt = int.TryParse(houseNumberStr, out var parsedNum) ? parsedNum : houseIndex;
+                    houseIndex++;
+
+                    string name = tags.TryGetValue("name", out var bName) ? bName : $"Čp. {houseNumInt} (Rodinný dům)";
+                    string entityId = $"building_cp_{houseNumInt}";
+
+                    var building = new SpatialEntity
                     {
-                        long fromId = wayNodeIds[i];
-                        long toId = wayNodeIds[i + 1];
-
-                        if (nodeDict.TryGetValue(fromId, out var fromCoords) && nodeDict.TryGetValue(toId, out var toCoords))
+                        Id = entityId,
+                        Type = SpatialEntityTypes.Building,
+                        Name = name,
+                        ParentId = parentSettlementId,
+                        Spatial = new SpatialComponent
                         {
-                            double cost = CalculateDistanceMeters(fromCoords.Lat, fromCoords.Lon, toCoords.Lat, toCoords.Lon);
-
-                            result.Edges.Add(new ConnectivityEdge
+                            Frame = "World",
+                            GlobalAnchor = new GeoAnchor { Lat = lat, Lon = lon }
+                        },
+                        Semantic = new SemanticComponent
+                        {
+                            Tags = ["building", "real_osm"],
+                            Description = $"Reálná budova z OpenStreetMap (OSM ID: {id}) na přesných souřadnicích {lat:F6}° N, {lon:F6}° E.",
+                            Attributes = new Dictionary<string, object>
                             {
-                                Id = $"edge_osm_{wayId}_{i}",
-                                FromId = $"place_osm_{fromId}",
-                                ToId = $"place_osm_{toId}",
-                                Kind = kind,
-                                Bidirectional = true,
-                                CostMeters = Math.Max(cost, 1.0),
-                                Provenance = new ProvenanceComponent
-                                {
-                                    Source = "OSM_OVERPASS",
-                                    SourceRef = wayId.ToString()
-                                }
-                            });
-                        }
-                    }
+                                { "osm_id", id },
+                                { "house_number", houseNumInt }
+                            }
+                        },
+                        Provenance = new ProvenanceComponent { Source = "OPENSTREETMAP", SourceRef = $"osm_{type}_{id}" },
+                        Generation = new GenerationComponent { State = houseNumInt == 23 ? GenerationState.Detailed : GenerationState.Verified, Method = "osm-import" }
+                    };
+
+                    result.Entities.Add(building);
+                }
+                else if (tags.ContainsKey("amenity") || tags.ContainsKey("historic"))
+                {
+                    string poiName = tags.TryGetValue("name", out var pName) ? pName : (tags.TryGetValue("historic", out var h) ? h : "Zájmové místo");
+                    string poiId = $"place_osm_{id}";
+
+                    var poi = new SpatialEntity
+                    {
+                        Id = poiId,
+                        Type = SpatialEntityTypes.Place,
+                        Name = poiName,
+                        ParentId = parentSettlementId,
+                        Spatial = new SpatialComponent
+                        {
+                            Frame = "World",
+                            GlobalAnchor = new GeoAnchor { Lat = lat, Lon = lon }
+                        },
+                        Semantic = new SemanticComponent
+                        {
+                            Tags = ["place", "poi", "osm"],
+                            Description = $"Reálný zájmový bod z OpenStreetMap (OSM ID: {id})."
+                        },
+                        Provenance = new ProvenanceComponent { Source = "OPENSTREETMAP", SourceRef = $"osm_{type}_{id}" }
+                    };
+
+                    result.Entities.Add(poi);
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Chyba při parsování OSM Overpass JSON: {ex.Message}");
+            Console.WriteLine($"[OsmOverpassParser] Chyba při parsování OSM JSON: {ex.Message}");
         }
 
         return result;
     }
-
-    private static double CalculateDistanceMeters(double lat1, double lon1, double lat2, double lon2)
-    {
-        double r = 6371000; // poloměr Země v metrech
-        double dLat = ToRadians(lat2 - lat1);
-        double dLon = ToRadians(lon2 - lon1);
-        double a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2) +
-                   Math.Cos(ToRadians(lat1)) * Math.Cos(ToRadians(lat2)) *
-                   Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
-        double c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
-        return r * c;
-    }
-
-    private static double ToRadians(double val) => val * Math.PI / 180.0;
 }

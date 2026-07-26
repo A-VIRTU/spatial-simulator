@@ -1,27 +1,3734 @@
 ﻿{
   "version": 0.6,
-  "generator": "Overpass API",
+  "generator": "Overpass API 0.7.62.11 87bfad18",
+  "osm3s": {
+    "timestamp_osm_base": "2026-07-26T21:15:04Z",
+    "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
+  },
   "elements": [
-    {
-      "type": "node",
-      "id": 1001,
-      "lat": 49.5728,
-      "lon": 16.8774,
-      "tags": {
-        "amenity": "place_of_worship",
-        "name": "Kaple sv. Flori\u00E1na",
-        "historic": "chapel"
-      }
-    },
-    {
-      "type": "node",
-      "id": 1002,
-      "lat": 49.5724,
-      "lon": 16.8765,
-      "tags": {
-        "highway": "bus_stop",
-        "name": "Autobusov\u00E1 zast\u00E1vka Run\u00E1\u0159ov"
-      }
-    }
+
+{
+  "type": "way",
+  "id": 203534246,
+  "center": {
+    "lat": 49.5763345,
+    "lon": 16.8811847
+  },
+  "nodes": [
+    2135447951,
+    2135447953,
+    2135447955,
+    2135447957,
+    2135447951
+  ],
+  "tags": {
+    "building": "yes",
+    "denomination": "catholic",
+    "historic": "wayside_chapel",
+    "religion": "christian",
+    "wikimedia_commons": "File:Boží muka nad Runářovem, Konice, okres Prostějov.jpg"
+  }
+},
+{
+  "type": "way",
+  "id": 243821809,
+  "center": {
+    "lat": 49.5728381,
+    "lon": 16.8775717
+  },
+  "nodes": [
+    2511818164,
+    2511818166,
+    2511818162,
+    2511818160,
+    2511818164
+  ],
+  "tags": {
+    "amenity": "shelter",
+    "bench": "yes",
+    "building": "yes",
+    "building:ruian:type": "19",
+    "ref:ruian:building": "41593286",
+    "shelter_type": "public_transport",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 261246651,
+  "center": {
+    "lat": 49.5760914,
+    "lon": 16.8831188
+  },
+  "nodes": [
+    2668674348,
+    3175801720,
+    3175801722,
+    3175801725,
+    3175801729,
+    3175801727,
+    3175801987,
+    3175801996,
+    3175801739,
+    3175801736,
+    2668674348
+  ],
+  "tags": {
+    "building": "barn",
+    "building:ruian:type": "13",
+    "ref:ruian:building": "48554588",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 261246652,
+  "center": {
+    "lat": 49.5756028,
+    "lon": 16.8840968
+  },
+  "nodes": [
+    3175801718,
+    3175801698,
+    3175801681,
+    3175801700,
+    3175801706,
+    3175801711,
+    3175801705,
+    3175801714,
+    3175801719,
+    3175801717,
+    3175801718
+  ],
+  "tags": {
+    "building": "barn",
+    "building:ruian:type": "13",
+    "ref:ruian:building": "45731373",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 261246653,
+  "center": {
+    "lat": 49.5760057,
+    "lon": 16.8839074
+  },
+  "nodes": [
+    3175801757,
+    3175801969,
+    3175801965,
+    3175801966,
+    3175801963,
+    3175801759,
+    3175801751,
+    3175801733,
+    3175801747,
+    3175801741,
+    3175801746,
+    3175801753,
+    3175801757
+  ],
+  "tags": {
+    "building": "barn",
+    "building:ruian:type": "13",
+    "ref:ruian:building": "39612601",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 261246654,
+  "center": {
+    "lat": 49.5756183,
+    "lon": 16.8833432
+  },
+  "nodes": [
+    3175801738,
+    3175801724,
+    3175801719,
+    3175801714,
+    2668674325,
+    3175801688,
+    3175801670,
+    3175801680,
+    3175801696,
+    3175801703,
+    3175801720,
+    2668674348,
+    3175801738
+  ],
+  "tags": {
+    "building": "barn",
+    "building:ruian:type": "13",
+    "ref:ruian:building": "48554596",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 261246656,
+  "center": {
+    "lat": 49.5751122,
+    "lon": 16.8823314
+  },
+  "nodes": [
+    3175800628,
+    3175800631,
+    3175800630,
+    3175800626,
+    3175800628
+  ],
+  "tags": {
+    "building": "industrial",
+    "building:ruian:type": "16",
+    "ref:ruian:building": "48554600",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 261246657,
+  "center": {
+    "lat": 49.5724000,
+    "lon": 16.8845045
+  },
+  "nodes": [
+    2668674232,
+    2668674229,
+    2668674227,
+    2668674230,
+    2668674232
+  ],
+  "tags": {
+    "building": "yes",
+    "source": "cuzk:km"
+  }
+},
+{
+  "type": "way",
+  "id": 261246658,
+  "center": {
+    "lat": 49.5748326,
+    "lon": 16.8813972
+  },
+  "nodes": [
+    3175800615,
+    3175800613,
+    3175800607,
+    3175800609,
+    3175800615
+  ],
+  "tags": {
+    "building": "barn",
+    "building:ruian:type": "13",
+    "ref:ruian:building": "45736952",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 261246660,
+  "center": {
+    "lat": 49.5748030,
+    "lon": 16.8833241
+  },
+  "nodes": [
+    3175800605,
+    3175800608,
+    3175800617,
+    3175800610,
+    3175800605
+  ],
+  "tags": {
+    "building": "barn",
+    "building:ruian:type": "13",
+    "ref:ruian:building": "39612597",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 261246664,
+  "center": {
+    "lat": 49.5748861,
+    "lon": 16.8825099
+  },
+  "nodes": [
+    3175800604,
+    3175800627,
+    3175800625,
+    3175800603,
+    3175800604
+  ],
+  "tags": {
+    "building": "barn",
+    "building:ruian:type": "13",
+    "ref:ruian:building": "45736120",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 261246665,
+  "center": {
+    "lat": 49.5749914,
+    "lon": 16.8817345
+  },
+  "nodes": [
+    3175800614,
+    3175800613,
+    3175800615,
+    3175800629,
+    3175800624,
+    3175800611,
+    3175800614
+  ],
+  "tags": {
+    "building": "barn",
+    "building:ruian:type": "13",
+    "ref:ruian:building": "42035112",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 261246666,
+  "center": {
+    "lat": 49.5754195,
+    "lon": 16.8838966
+  },
+  "nodes": [
+    2668674325,
+    3175801692,
+    3175801672,
+    3175800649,
+    3175801675,
+    3175801679,
+    3175801688,
+    2668674325
+  ],
+  "tags": {
+    "building": "barn",
+    "building:ruian:type": "13",
+    "ref:ruian:building": "39612571",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 261246667,
+  "center": {
+    "lat": 49.5757021,
+    "lon": 16.8814789
+  },
+  "nodes": [
+    3175801743,
+    3175801735,
+    3175801734,
+    3175801730,
+    3175801731,
+    3175801684,
+    3175801683,
+    3175801685,
+    3175801686,
+    3175801744,
+    3175801743
+  ],
+  "tags": {
+    "building": "civic",
+    "building:ruian:type": "15",
+    "ref:ruian:building": "45736111",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 261246668,
+  "center": {
+    "lat": 49.5750295,
+    "lon": 16.8837477
+  },
+  "nodes": [
+    3175800633,
+    3175800622,
+    3175800621,
+    3175800620,
+    3175800618,
+    3175800619,
+    3175800612,
+    3175800623,
+    3175800637,
+    3175800635,
+    3175800636,
+    3175800634,
+    3175800633
+  ],
+  "tags": {
+    "building": "barn",
+    "building:ruian:type": "13",
+    "ref:ruian:building": "45736103",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 261246669,
+  "center": {
+    "lat": 49.5753990,
+    "lon": 16.8814238
+  },
+  "nodes": [
+    3175800656,
+    3175800658,
+    3175801687,
+    3175801686,
+    3175801685,
+    3175801684,
+    3175801682,
+    3175800653,
+    3175800654,
+    3175800650,
+    3175800651,
+    3175800656
+  ],
+  "tags": {
+    "building": "civic",
+    "building:ruian:type": "15",
+    "ref:ruian:building": "27419363",
+    "source": "cuzk:ruian",
+    "start_date": "2009-10-21"
+  }
+},
+{
+  "type": "way",
+  "id": 261246670,
+  "center": {
+    "lat": 49.5759271,
+    "lon": 16.8829066
+  },
+  "nodes": [
+    3175801971,
+    3175801974,
+    3175801713,
+    3175801710,
+    3175801703,
+    3175801696,
+    3175801701,
+    3175801697,
+    3175801971
+  ],
+  "tags": {
+    "building": "barn",
+    "building:ruian:type": "13",
+    "ref:ruian:building": "42035104",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 361004744,
+  "center": {
+    "lat": 49.5726577,
+    "lon": 16.8730331
+  },
+  "nodes": [
+    3655363113,
+    3655363111,
+    3655363114,
+    3655363110,
+    3655363107,
+    3655363108,
+    3655363101,
+    3655363103,
+    3655363100,
+    3655363102,
+    3655363104,
+    3655363106,
+    3655363113
+  ],
+  "tags": {
+    "building": "house",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "24968200",
+    "source": "cuzk:ruian",
+    "start_date": "2001-09-17"
+  }
+},
+{
+  "type": "way",
+  "id": 361513809,
+  "center": {
+    "lat": 49.5702661,
+    "lon": 16.8805659
+  },
+  "nodes": [
+    3659762120,
+    3659762126,
+    3659762121,
+    3659762115,
+    3659762117,
+    3659762110,
+    3659762111,
+    3659762122,
+    3659762120
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10543236",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 507108510,
+  "center": {
+    "lat": 49.5743740,
+    "lon": 16.8768988
+  },
+  "nodes": [
+    4966964292,
+    4966964291,
+    4966964290,
+    4966964289,
+    4966964288,
+    4966964287,
+    4966964286,
+    4966964285,
+    4966964292
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:levels": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "80324304",
+    "source": "cuzk:ruian",
+    "start_date": "2015-10-01"
+  }
+},
+{
+  "type": "way",
+  "id": 546887160,
+  "center": {
+    "lat": 49.5739892,
+    "lon": 16.8735209
+  },
+  "nodes": [
+    5284507806,
+    5284507805,
+    5284507804,
+    5284507803,
+    5284507806
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10543376",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887161,
+  "center": {
+    "lat": 49.5741599,
+    "lon": 16.8733225
+  },
+  "nodes": [
+    5284507810,
+    5284507809,
+    5284507808,
+    5284507807,
+    5284507810
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:levels": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10543597",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887162,
+  "center": {
+    "lat": 49.5742147,
+    "lon": 16.8732094
+  },
+  "nodes": [
+    5284507816,
+    5284507815,
+    5284507814,
+    5284507813,
+    5284507812,
+    5284507811,
+    5284507816
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:levels": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10543546",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887163,
+  "center": {
+    "lat": 49.5742650,
+    "lon": 16.8730569
+  },
+  "nodes": [
+    5284512124,
+    5284512123,
+    5284512122,
+    5284512121,
+    5284507820,
+    5284507819,
+    5284507818,
+    5284507817,
+    5284512124
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10543589",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887164,
+  "center": {
+    "lat": 49.5742875,
+    "lon": 16.8728849
+  },
+  "nodes": [
+    5284512128,
+    5284512127,
+    5284512126,
+    5284512125,
+    5284512128
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:levels": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10543635",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887165,
+  "center": {
+    "lat": 49.5741199,
+    "lon": 16.8725681
+  },
+  "nodes": [
+    5284512135,
+    5284512134,
+    5284512133,
+    5284512132,
+    5284512131,
+    5284512130,
+    5284512129,
+    5284512135
+  ],
+  "tags": {
+    "building": "barn",
+    "building:ruian:type": "13",
+    "ref:ruian:building": "48082147",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887166,
+  "center": {
+    "lat": 49.5740301,
+    "lon": 16.8726963
+  },
+  "nodes": [
+    5284512139,
+    5284512138,
+    5284512137,
+    5284512136,
+    5284512139
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:levels": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10543503",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887167,
+  "center": {
+    "lat": 49.5739664,
+    "lon": 16.8731105
+  },
+  "nodes": [
+    5284512143,
+    5284512142,
+    5284512141,
+    5284512140,
+    5284512143
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:levels": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10543406",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887168,
+  "center": {
+    "lat": 49.5738559,
+    "lon": 16.8733523
+  },
+  "nodes": [
+    5284512149,
+    5284512148,
+    5284512147,
+    5284512146,
+    5284512145,
+    5284512144,
+    5284512149
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:levels": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10543384",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887169,
+  "center": {
+    "lat": 49.5742953,
+    "lon": 16.8742390
+  },
+  "nodes": [
+    5284512153,
+    5284512151,
+    5284512150,
+    5284512152,
+    5284512153
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:levels": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10542876",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887170,
+  "center": {
+    "lat": 49.5743422,
+    "lon": 16.8741584
+  },
+  "nodes": [
+    5284512154,
+    5284512155,
+    5284512153,
+    5284512152,
+    5284512154
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:levels": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10542957",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887171,
+  "center": {
+    "lat": 49.5743897,
+    "lon": 16.8740778
+  },
+  "nodes": [
+    5284512157,
+    5284512155,
+    5284512154,
+    5284512156,
+    5284512157
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:levels": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10542965",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887172,
+  "center": {
+    "lat": 49.5744378,
+    "lon": 16.8739973
+  },
+  "nodes": [
+    5284512159,
+    5284512158,
+    5284512157,
+    5284512156,
+    5284512159
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:levels": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10542973",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887173,
+  "center": {
+    "lat": 49.5745507,
+    "lon": 16.8732599
+  },
+  "nodes": [
+    11082738112,
+    5284512163,
+    11082738111,
+    11082738110,
+    11082738109,
+    11082738108,
+    5284512162,
+    5284512161,
+    5284512160,
+    11082738107,
+    11082738112
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "2",
+    "building:levels": "2",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10543783",
+    "source": "cuzk:ruian",
+    "start_date": "1976-01-01"
+  }
+},
+{
+  "type": "way",
+  "id": 546887174,
+  "center": {
+    "lat": 49.5744307,
+    "lon": 16.8727256
+  },
+  "nodes": [
+    5284512169,
+    5284512168,
+    5284512167,
+    5284512166,
+    5284512165,
+    5284512164,
+    5284512169
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:levels": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10543678",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887176,
+  "center": {
+    "lat": 49.5743906,
+    "lon": 16.8724371
+  },
+  "nodes": [
+    11082681502,
+    5284512176,
+    5284512173,
+    5284512172,
+    5284512171,
+    5284512170,
+    5284512177,
+    11082681501,
+    11082681502
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:levels": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10543686",
+    "source": "cuzk:ruian",
+    "start_date": "2020-01-13"
+  }
+},
+{
+  "type": "way",
+  "id": 546887177,
+  "center": {
+    "lat": 49.5742048,
+    "lon": 16.8722216
+  },
+  "nodes": [
+    5284512185,
+    5284512184,
+    5284512183,
+    5284512182,
+    5284512181,
+    5284512180,
+    5284512179,
+    5284512178,
+    5284512185
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:levels": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10543571",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887178,
+  "center": {
+    "lat": 49.5738639,
+    "lon": 16.8713618
+  },
+  "nodes": [
+    5284512191,
+    5284512190,
+    5284512189,
+    5284512188,
+    5284512187,
+    5284512186,
+    5284512191
+  ],
+  "tags": {
+    "building": "yes",
+    "building:ruian:type": "19",
+    "ref:ruian:building": "47591510",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887179,
+  "center": {
+    "lat": 49.5740236,
+    "lon": 16.8708899
+  },
+  "nodes": [
+    5284512195,
+    5284512194,
+    5284512193,
+    5284512192,
+    5284512195
+  ],
+  "tags": {
+    "building": "yes",
+    "building:ruian:type": "19",
+    "ref:ruian:building": "47729147",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887180,
+  "center": {
+    "lat": 49.5739593,
+    "lon": 16.8716135
+  },
+  "nodes": [
+    5284512201,
+    5284512200,
+    5284512199,
+    5284512198,
+    5284512197,
+    5284512196,
+    5284512201
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:levels": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10543651",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887182,
+  "center": {
+    "lat": 49.5740979,
+    "lon": 16.8713459
+  },
+  "nodes": [
+    5284512205,
+    5284512204,
+    5284512203,
+    5284512202,
+    5284512205
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10543473",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887183,
+  "center": {
+    "lat": 49.5742382,
+    "lon": 16.8712148
+  },
+  "nodes": [
+    5284512213,
+    5284512212,
+    5284512211,
+    5284512210,
+    5284512209,
+    5284512208,
+    5284512207,
+    5284512206,
+    5284512213
+  ],
+  "tags": {
+    "building": "house",
+    "building:levels": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10543881",
+    "source": "cuzk:ruian",
+    "start_date": "2013-03-13"
+  }
+},
+{
+  "type": "way",
+  "id": 546887184,
+  "center": {
+    "lat": 49.5742177,
+    "lon": 16.8716745
+  },
+  "nodes": [
+    5284512321,
+    5284512220,
+    5284512219,
+    5284512218,
+    5284512217,
+    5284512326,
+    5284512216,
+    5284512215,
+    5284512214,
+    5284512321
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10543708",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887187,
+  "center": {
+    "lat": 49.5741278,
+    "lon": 16.8718058
+  },
+  "nodes": [
+    5284512327,
+    5284512216,
+    5284512326,
+    5284512325,
+    5284512324,
+    5284512323,
+    5284512322,
+    5284512327
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10543627",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887188,
+  "center": {
+    "lat": 49.5741204,
+    "lon": 16.8719793
+  },
+  "nodes": [
+    5284512335,
+    5284512334,
+    5284512333,
+    5284512332,
+    5284512331,
+    5284512330,
+    5284512329,
+    5284512328,
+    5284512335
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10543643",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887189,
+  "center": {
+    "lat": 49.5744782,
+    "lon": 16.8718723
+  },
+  "nodes": [
+    5284512343,
+    5284512342,
+    5284512341,
+    5284512340,
+    5284512339,
+    5284512338,
+    5284512337,
+    5284512336,
+    5284512343
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:levels": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10543660",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887191,
+  "center": {
+    "lat": 49.5746843,
+    "lon": 16.8721139
+  },
+  "nodes": [
+    5284512347,
+    5284512346,
+    5284512345,
+    5284512344,
+    5284512347
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:levels": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10543767",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887192,
+  "center": {
+    "lat": 49.5747008,
+    "lon": 16.8724285
+  },
+  "nodes": [
+    5284512355,
+    5284512354,
+    5284512353,
+    5284512352,
+    5284512351,
+    5284512350,
+    5284512349,
+    5284512348,
+    5284512355
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:levels": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10543805",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887193,
+  "center": {
+    "lat": 49.5746300,
+    "lon": 16.8712482
+  },
+  "nodes": [
+    5284512365,
+    5284512364,
+    5284512363,
+    5284512362,
+    5284512361,
+    5284512360,
+    5284512359,
+    5284512358,
+    5284512357,
+    5284512356,
+    5284512365
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:levels": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10543813",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887194,
+  "center": {
+    "lat": 49.5744055,
+    "lon": 16.8708492
+  },
+  "nodes": [
+    5284512369,
+    5284512368,
+    5284512367,
+    5284512366,
+    5284512369
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10543716",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887195,
+  "center": {
+    "lat": 49.5743121,
+    "lon": 16.8705519
+  },
+  "nodes": [
+    5284512373,
+    5284512372,
+    5284512371,
+    5284512370,
+    5284512373
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:levels": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10543724",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887196,
+  "center": {
+    "lat": 49.5742568,
+    "lon": 16.8703512
+  },
+  "nodes": [
+    5284512377,
+    5284512376,
+    5284512375,
+    5284512374,
+    5284512377
+  ],
+  "tags": {
+    "building": "house",
+    "building:levels": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10543538",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887197,
+  "center": {
+    "lat": 49.5742724,
+    "lon": 16.8699468
+  },
+  "nodes": [
+    5284512381,
+    5284512380,
+    5284512379,
+    5284512378,
+    5284512381
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:levels": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10543732",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887199,
+  "center": {
+    "lat": 49.5732110,
+    "lon": 16.8718841
+  },
+  "nodes": [
+    5284512385,
+    5284512384,
+    5284512383,
+    5284512382,
+    5284512385
+  ],
+  "tags": {
+    "building": "yes",
+    "building:ruian:type": "8",
+    "ref:ruian:building": "48232653",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887200,
+  "center": {
+    "lat": 49.5733419,
+    "lon": 16.8720567
+  },
+  "nodes": [
+    5284512391,
+    5284512390,
+    5284512389,
+    5284512388,
+    5284512387,
+    5284512386,
+    5284512391
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:levels": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10543252",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887201,
+  "center": {
+    "lat": 49.5734181,
+    "lon": 16.8718887
+  },
+  "nodes": [
+    5284512395,
+    5284512394,
+    5284512393,
+    5284512392,
+    5284512395
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10543775",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887202,
+  "center": {
+    "lat": 49.5736639,
+    "lon": 16.8719244
+  },
+  "nodes": [
+    5284512401,
+    5284512400,
+    5284512399,
+    5284512398,
+    5284512397,
+    5284512396,
+    5284512401
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:levels": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10543414",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887203,
+  "center": {
+    "lat": 49.5738752,
+    "lon": 16.8721995
+  },
+  "nodes": [
+    5284512405,
+    5284512404,
+    5284512403,
+    5284512402,
+    5284512405
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10543465",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887204,
+  "center": {
+    "lat": 49.5738597,
+    "lon": 16.8725114
+  },
+  "nodes": [
+    5284512409,
+    5284512408,
+    5284512407,
+    5284512406,
+    5284512409
+  ],
+  "tags": {
+    "building": "barn",
+    "building:ruian:type": "13",
+    "ref:ruian:building": "48953989",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887206,
+  "center": {
+    "lat": 49.5738042,
+    "lon": 16.8729009
+  },
+  "nodes": [
+    5284512417,
+    5284512416,
+    5284512415,
+    5284512414,
+    5284512413,
+    5284512412,
+    5284512411,
+    5284512410,
+    5284512417
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:levels": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10543481",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887207,
+  "center": {
+    "lat": 49.5735735,
+    "lon": 16.8727162
+  },
+  "nodes": [
+    5284512425,
+    5284512424,
+    5284512423,
+    5284512422,
+    5284512421,
+    5284512420,
+    5284512419,
+    5284512418,
+    5284512425
+  ],
+  "tags": {
+    "building": "yes",
+    "building:ruian:type": "19",
+    "ref:ruian:building": "47636343",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887209,
+  "center": {
+    "lat": 49.5734822,
+    "lon": 16.8727948
+  },
+  "nodes": [
+    5284512431,
+    5284512430,
+    5284512429,
+    5284512428,
+    5284512427,
+    5284512426,
+    5284512431
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:levels": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10543333",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887210,
+  "center": {
+    "lat": 49.5735613,
+    "lon": 16.8730415
+  },
+  "nodes": [
+    5284512441,
+    5284512440,
+    5284512439,
+    5284512438,
+    5284512437,
+    5284512436,
+    5284512435,
+    5284512434,
+    5284512433,
+    5284512432,
+    5284512441
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:levels": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10543040",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887212,
+  "center": {
+    "lat": 49.5736150,
+    "lon": 16.8734660
+  },
+  "nodes": [
+    5284512445,
+    5284512444,
+    5284512443,
+    5284512442,
+    5284512445
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10543341",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887213,
+  "center": {
+    "lat": 49.5737158,
+    "lon": 16.8736936
+  },
+  "nodes": [
+    5284512449,
+    5284512448,
+    5284512447,
+    5284512446,
+    5284512449
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10543295",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887215,
+  "center": {
+    "lat": 49.5735656,
+    "lon": 16.8741230
+  },
+  "nodes": [
+    5284512455,
+    5284512454,
+    5284512453,
+    5284512452,
+    5284512451,
+    5284512450,
+    5284512455
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:levels": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10543287",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887216,
+  "center": {
+    "lat": 49.5733249,
+    "lon": 16.8741882
+  },
+  "nodes": [
+    5284512463,
+    5284512462,
+    5284512461,
+    5284512460,
+    5284512459,
+    5284512458,
+    5284512457,
+    5284512456,
+    5284512463
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10543082",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887218,
+  "center": {
+    "lat": 49.5733599,
+    "lon": 16.8738571
+  },
+  "nodes": [
+    5284512467,
+    5284512466,
+    5284512465,
+    5284512464,
+    5284512467
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10543074",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887219,
+  "center": {
+    "lat": 49.5733790,
+    "lon": 16.8735184
+  },
+  "nodes": [
+    5284512471,
+    5284512470,
+    5284512469,
+    5284512468,
+    5284512471
+  ],
+  "tags": {
+    "building": "civic",
+    "building:flats": "1",
+    "building:levels": "1",
+    "building:ruian:type": "15",
+    "ref:ruian:building": "10543490",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887220,
+  "center": {
+    "lat": 49.5732650,
+    "lon": 16.8733374
+  },
+  "nodes": [
+    5284512477,
+    5284512476,
+    5284512475,
+    5284512474,
+    5284512473,
+    5284512472,
+    5284512477
+  ],
+  "tags": {
+    "building": "house",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10543309",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887221,
+  "center": {
+    "lat": 49.5731184,
+    "lon": 16.8732903
+  },
+  "nodes": [
+    5284512483,
+    5284512482,
+    5284512481,
+    5284512480,
+    5284512479,
+    5284512478,
+    5284512483
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:levels": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10543058",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887223,
+  "center": {
+    "lat": 49.5728666,
+    "lon": 16.8732996
+  },
+  "nodes": [
+    5284512487,
+    5284512486,
+    5284512485,
+    5284512484,
+    5284512487
+  ],
+  "tags": {
+    "building": "barn",
+    "building:ruian:type": "13",
+    "ref:ruian:building": "41174968",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887224,
+  "center": {
+    "lat": 49.5729846,
+    "lon": 16.8736625
+  },
+  "nodes": [
+    5284512493,
+    5284512492,
+    5284512491,
+    5284512490,
+    5284512489,
+    5284512488,
+    5284512493
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10543066",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887225,
+  "center": {
+    "lat": 49.5731033,
+    "lon": 16.8742513
+  },
+  "nodes": [
+    5284512499,
+    5284512498,
+    5284512497,
+    5284512496,
+    5284512495,
+    5284512494,
+    5284512499
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10543317",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887227,
+  "center": {
+    "lat": 49.5729033,
+    "lon": 16.8740978
+  },
+  "nodes": [
+    5284512507,
+    5284512506,
+    5284512505,
+    5284512504,
+    5284512503,
+    5284512502,
+    5284512501,
+    5284512500,
+    5284512507
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:levels": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10543619",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887229,
+  "center": {
+    "lat": 49.5728736,
+    "lon": 16.8746848
+  },
+  "nodes": [
+    5284512511,
+    5284512510,
+    5284512509,
+    5284512508,
+    5284512511
+  ],
+  "tags": {
+    "building": "garage",
+    "building:ruian:type": "18",
+    "ref:ruian:building": "47729180",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887230,
+  "center": {
+    "lat": 49.5729252,
+    "lon": 16.8744955
+  },
+  "nodes": [
+    5284512519,
+    5284512518,
+    5284512517,
+    5284512516,
+    5284512515,
+    5284512514,
+    5284512522,
+    5284512513,
+    5284512512,
+    5284512519
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:levels": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10543104",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887232,
+  "center": {
+    "lat": 49.5727572,
+    "lon": 16.8746295
+  },
+  "nodes": [
+    5284512523,
+    5284512513,
+    5284512522,
+    5284512521,
+    5284512520,
+    5284512523
+  ],
+  "tags": {
+    "building": "barn",
+    "building:ruian:type": "13",
+    "ref:ruian:building": "41174984",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887234,
+  "center": {
+    "lat": 49.5739023,
+    "lon": 16.8745285
+  },
+  "nodes": [
+    5284512527,
+    5284512526,
+    5284512525,
+    5284512524,
+    5284512527
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:levels": "2",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "26622611",
+    "source": "cuzk:ruian",
+    "start_date": "2007-09-20"
+  }
+},
+{
+  "type": "way",
+  "id": 546887236,
+  "center": {
+    "lat": 49.5736286,
+    "lon": 16.8750074
+  },
+  "nodes": [
+    5284512536,
+    5284512535,
+    5284512534,
+    5284512533,
+    5284512532,
+    5284512531,
+    5284512530,
+    5284512529,
+    5284512528,
+    5284512536
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10543031",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887238,
+  "center": {
+    "lat": 49.5736201,
+    "lon": 16.8755008
+  },
+  "nodes": [
+    5284512540,
+    5284512539,
+    5284512538,
+    5284512537,
+    5284512540
+  ],
+  "tags": {
+    "building": "yes",
+    "building:ruian:type": "19",
+    "ref:ruian:building": "42825652",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887239,
+  "center": {
+    "lat": 49.5735701,
+    "lon": 16.8756214
+  },
+  "nodes": [
+    5284512544,
+    5284512543,
+    5284512542,
+    5284512541,
+    5284512544
+  ],
+  "tags": {
+    "building": "yes",
+    "building:ruian:type": "8",
+    "ref:ruian:building": "27303462",
+    "source": "cuzk:ruian",
+    "start_date": "2009-05-13"
+  }
+},
+{
+  "type": "way",
+  "id": 546887240,
+  "center": {
+    "lat": 49.5731500,
+    "lon": 16.8761636
+  },
+  "nodes": [
+    5284512555,
+    5284512554,
+    5284512553,
+    5284512552,
+    5284512551,
+    5284512550,
+    5284512549,
+    5284512548,
+    5284512547,
+    5284512546,
+    5284512545,
+    5284512555
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:levels": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10543431",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887242,
+  "center": {
+    "lat": 49.5731320,
+    "lon": 16.8759460
+  },
+  "nodes": [
+    5284512559,
+    5284512558,
+    5284512557,
+    5284512556,
+    5284512559
+  ],
+  "tags": {
+    "building": "barn",
+    "building:ruian:type": "13",
+    "ref:ruian:building": "41174950",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887244,
+  "center": {
+    "lat": 49.5730330,
+    "lon": 16.8760829
+  },
+  "nodes": [
+    5284512563,
+    5284512562,
+    5284512561,
+    5284512560,
+    5284512563
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:levels": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10543023",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887245,
+  "center": {
+    "lat": 49.5726136,
+    "lon": 16.8752428
+  },
+  "nodes": [
+    5532102619,
+    5532102618,
+    5532102620,
+    5284512566,
+    5284512565,
+    5284512564,
+    5532102619
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:levels": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10543112",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887247,
+  "center": {
+    "lat": 49.5729495,
+    "lon": 16.8755627
+  },
+  "nodes": [
+    5284512571,
+    5284512570,
+    5284512569,
+    5284512568,
+    5284512571
+  ],
+  "tags": {
+    "building": "garage",
+    "building:ruian:type": "18",
+    "ref:ruian:building": "41799054",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887249,
+  "center": {
+    "lat": 49.5728958,
+    "lon": 16.8759197
+  },
+  "nodes": [
+    5284512577,
+    5284512576,
+    5284512575,
+    5284512574,
+    5284512573,
+    5284512572,
+    5284512577
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:levels": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10543121",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887250,
+  "center": {
+    "lat": 49.5728177,
+    "lon": 16.8761577
+  },
+  "nodes": [
+    5284512581,
+    5284512580,
+    5284512579,
+    5284512578,
+    5284512581
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "3",
+    "building:levels": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10543139",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887252,
+  "center": {
+    "lat": 49.5726963,
+    "lon": 16.8765110
+  },
+  "nodes": [
+    5284512587,
+    5284512586,
+    5284512585,
+    5284512584,
+    5284512583,
+    5284512582,
+    5284512587
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:levels": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10543261",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887253,
+  "center": {
+    "lat": 49.5725676,
+    "lon": 16.8768661
+  },
+  "nodes": [
+    5284512591,
+    5284512590,
+    5284512589,
+    5284512588,
+    5284512591
+  ],
+  "tags": {
+    "building": "barn",
+    "building:ruian:type": "13",
+    "ref:ruian:building": "47696737",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887255,
+  "center": {
+    "lat": 49.5724826,
+    "lon": 16.8766563
+  },
+  "nodes": [
+    5284512603,
+    5284512602,
+    5284512601,
+    5284512600,
+    5284512599,
+    5284512598,
+    5284512597,
+    5284512596,
+    5284512595,
+    5284512594,
+    5284512593,
+    5284512592,
+    5284512603
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:levels": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10543554",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887256,
+  "center": {
+    "lat": 49.5722756,
+    "lon": 16.8767516
+  },
+  "nodes": [
+    5284512607,
+    5284512606,
+    5284512605,
+    5284512604,
+    5284512607
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:levels": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10543147",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887258,
+  "center": {
+    "lat": 49.5738454,
+    "lon": 16.8764570
+  },
+  "nodes": [
+    5284512611,
+    5284512610,
+    5284512609,
+    5284512608,
+    5284512611
+  ],
+  "tags": {
+    "building": "barn",
+    "building:ruian:type": "13",
+    "ref:ruian:building": "41176456",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887259,
+  "center": {
+    "lat": 49.5737417,
+    "lon": 16.8768416
+  },
+  "nodes": [
+    5284512615,
+    5284512614,
+    5284512613,
+    5284512612,
+    5284512615
+  ],
+  "tags": {
+    "building": "barn",
+    "building:ruian:type": "13",
+    "ref:ruian:building": "41176421",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887260,
+  "center": {
+    "lat": 49.5736075,
+    "lon": 16.8764557
+  },
+  "nodes": [
+    5284512725,
+    5284512724,
+    5284512723,
+    5284512722,
+    5284512721,
+    5284512620,
+    5284512619,
+    5284512618,
+    5284512617,
+    5284512616,
+    5284512725
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:levels": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10543422",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887261,
+  "center": {
+    "lat": 49.5735210,
+    "lon": 16.8768668
+  },
+  "nodes": [
+    5284512733,
+    5284512732,
+    5284512731,
+    5284512730,
+    5284512729,
+    5284512728,
+    5284512727,
+    5284512726,
+    5284512733
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:levels": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10542990",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887262,
+  "center": {
+    "lat": 49.5735837,
+    "lon": 16.8772587
+  },
+  "nodes": [
+    5284512741,
+    5284512740,
+    5284512739,
+    5284512738,
+    5284512737,
+    5284512736,
+    5284512735,
+    5284512734,
+    5284512741
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10543449",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887264,
+  "center": {
+    "lat": 49.5735790,
+    "lon": 16.8776587
+  },
+  "nodes": [
+    5284512755,
+    5284512754,
+    5284512753,
+    5284512752,
+    5284512751,
+    5284512750,
+    5284512749,
+    5284512748,
+    5284512747,
+    5284512746,
+    5284512745,
+    5284512744,
+    5284512743,
+    5284512742,
+    5284512755
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:levels": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10542981",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887266,
+  "center": {
+    "lat": 49.5738005,
+    "lon": 16.8787315
+  },
+  "nodes": [
+    5284512759,
+    5284512758,
+    5284512757,
+    5284512756,
+    5284512759
+  ],
+  "tags": {
+    "building": "barn",
+    "building:ruian:type": "13",
+    "ref:ruian:building": "47740752",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887267,
+  "center": {
+    "lat": 49.5737575,
+    "lon": 16.8783756
+  },
+  "nodes": [
+    5284512763,
+    5284512762,
+    5284512761,
+    5284512760,
+    5284512763
+  ],
+  "tags": {
+    "building": "barn",
+    "building:ruian:type": "13",
+    "ref:ruian:building": "41176430",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887269,
+  "center": {
+    "lat": 49.5734312,
+    "lon": 16.8782680
+  },
+  "nodes": [
+    5284512769,
+    5284512768,
+    5284512767,
+    5284512766,
+    5284512765,
+    5284512764,
+    5284512769
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "2",
+    "building:levels": "3",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10542931",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887271,
+  "center": {
+    "lat": 49.5731256,
+    "lon": 16.8784167
+  },
+  "nodes": [
+    5284512773,
+    5284512772,
+    5284512771,
+    5284512770,
+    5776982326,
+    5776982325,
+    5776982324,
+    5776982323,
+    5776982322,
+    5776982321,
+    5284512773
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:levels": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10542922",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887272,
+  "center": {
+    "lat": 49.5732643,
+    "lon": 16.8789726
+  },
+  "nodes": [
+    5284512779,
+    5284512778,
+    5284512777,
+    5284512776,
+    5284512775,
+    5284512774,
+    5284512779
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:levels": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10542914",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887273,
+  "center": {
+    "lat": 49.5732558,
+    "lon": 16.8794175
+  },
+  "nodes": [
+    5284512787,
+    5284512786,
+    5284512785,
+    5284512784,
+    5284512783,
+    5284512782,
+    5284512781,
+    5284512780,
+    5284512787
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:levels": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10543511",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887274,
+  "center": {
+    "lat": 49.5731023,
+    "lon": 16.8798006
+  },
+  "nodes": [
+    5284512791,
+    5284512790,
+    5284512789,
+    5284512788,
+    5284512791
+  ],
+  "tags": {
+    "building": "residential",
+    "building:flats": "4",
+    "building:levels": "3",
+    "building:ruian:type": "6",
+    "ref:ruian:building": "10542906",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887275,
+  "center": {
+    "lat": 49.5722524,
+    "lon": 16.8829135
+  },
+  "nodes": [
+    5284512796,
+    5284512795,
+    5284512794,
+    5284512793,
+    5284512792,
+    5284512796
+  ],
+  "tags": {
+    "building": "barn",
+    "building:ruian:type": "13",
+    "ref:ruian:building": "47729112",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887276,
+  "center": {
+    "lat": 49.5721686,
+    "lon": 16.8825655
+  },
+  "nodes": [
+    5284512802,
+    5284512801,
+    5284512800,
+    5284512799,
+    5284512798,
+    5284512797,
+    5284512802
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10542850",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887277,
+  "center": {
+    "lat": 49.5725040,
+    "lon": 16.8823022
+  },
+  "nodes": [
+    5284512806,
+    5284512805,
+    5284512804,
+    5284512803,
+    5284512806
+  ],
+  "tags": {
+    "building": "barn",
+    "building:ruian:type": "13",
+    "ref:ruian:building": "47729163",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887278,
+  "center": {
+    "lat": 49.5723088,
+    "lon": 16.8818763
+  },
+  "nodes": [
+    5284512814,
+    5284512813,
+    5284512812,
+    5284512811,
+    5284512810,
+    5284512809,
+    5284512808,
+    5284512807,
+    5284512814
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:levels": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10542868",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887279,
+  "center": {
+    "lat": 49.5721698,
+    "lon": 16.8803828
+  },
+  "nodes": [
+    5284512922,
+    5284512921,
+    5284512820,
+    5284512819,
+    5284512818,
+    5284512817,
+    5284512816,
+    5284512815,
+    5284512922
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:levels": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10543210",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887280,
+  "center": {
+    "lat": 49.5723052,
+    "lon": 16.8805527
+  },
+  "nodes": [
+    5284512926,
+    5284512925,
+    5284512924,
+    5284512923,
+    5284512926
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:levels": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10543694",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887281,
+  "center": {
+    "lat": 49.5725320,
+    "lon": 16.8806687
+  },
+  "nodes": [
+    5284512932,
+    5284512931,
+    5284512930,
+    5284512929,
+    5284512928,
+    5284512927,
+    5284512932
+  ],
+  "tags": {
+    "building": "house",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10543392",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887282,
+  "center": {
+    "lat": 49.5725212,
+    "lon": 16.8802580
+  },
+  "nodes": [
+    5284512936,
+    5284512935,
+    5284512934,
+    5284512933,
+    5284512936
+  ],
+  "tags": {
+    "building": "civic",
+    "building:ruian:type": "15",
+    "ref:ruian:building": "10543759",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887283,
+  "center": {
+    "lat": 49.5727138,
+    "lon": 16.8811836
+  },
+  "nodes": [
+    5284512946,
+    5284512945,
+    5284512944,
+    5284512943,
+    5284512942,
+    5284512941,
+    5284512940,
+    5284512939,
+    5284512938,
+    5284512937,
+    5284512946
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:levels": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10542884",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887284,
+  "center": {
+    "lat": 49.5730022,
+    "lon": 16.8810248
+  },
+  "nodes": [
+    5284512950,
+    5284512949,
+    5284512948,
+    5284512947,
+    5284512950
+  ],
+  "tags": {
+    "building": "barn",
+    "building:ruian:type": "13",
+    "ref:ruian:building": "47729171",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887285,
+  "center": {
+    "lat": 49.5728058,
+    "lon": 16.8807768
+  },
+  "nodes": [
+    5284512967,
+    5284512959,
+    5284512958,
+    5284512957,
+    5284512956,
+    5284512955,
+    5284512954,
+    5284512953,
+    5284512952,
+    5284512951,
+    5284512966,
+    5284512967
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:levels": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10543520",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887286,
+  "center": {
+    "lat": 49.5729128,
+    "lon": 16.8804538
+  },
+  "nodes": [
+    5284512973,
+    5284512972,
+    5284512971,
+    5284512970,
+    5284512969,
+    5284512968,
+    5284512967,
+    5284512966,
+    5284512965,
+    5284512964,
+    5284512963,
+    5284512962,
+    5284512961,
+    5284512960,
+    5284512973
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:levels": "3",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "53993934",
+    "source": "cuzk:ruian",
+    "start_date": "2013-02-18"
+  }
+},
+{
+  "type": "way",
+  "id": 546887287,
+  "center": {
+    "lat": 49.5724847,
+    "lon": 16.8798453
+  },
+  "nodes": [
+    5284512979,
+    5284512978,
+    5284512977,
+    5284512976,
+    5284512975,
+    5284512974,
+    5284512979
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10543198",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887288,
+  "center": {
+    "lat": 49.5726145,
+    "lon": 16.8799135
+  },
+  "nodes": [
+    5284512991,
+    5284512990,
+    5284512989,
+    5284512988,
+    5284512987,
+    5284512986,
+    5284512985,
+    5284512984,
+    5284512983,
+    5284512982,
+    5284512981,
+    5284512980,
+    5284512991
+  ],
+  "tags": {
+    "building": "civic",
+    "building:levels": "2",
+    "building:ruian:type": "15",
+    "ref:ruian:building": "10543791",
+    "source": "cuzk:ruian",
+    "start_date": "2017-10-10"
+  }
+},
+{
+  "type": "way",
+  "id": 546887289,
+  "center": {
+    "lat": 49.5724609,
+    "lon": 16.8792672
+  },
+  "nodes": [
+    5284513000,
+    5284512999,
+    5284512998,
+    5284512997,
+    5284512996,
+    5284512995,
+    5284512994,
+    5284512993,
+    5284512992,
+    5284513000
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:levels": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10543368",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887290,
+  "center": {
+    "lat": 49.5727415,
+    "lon": 16.8794160
+  },
+  "nodes": [
+    5284513004,
+    5284513003,
+    5284513002,
+    5284513001,
+    5284513004
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:levels": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10543325",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887291,
+  "center": {
+    "lat": 49.5726617,
+    "lon": 16.8791209
+  },
+  "nodes": [
+    5284513010,
+    5284513009,
+    5284513008,
+    5284513007,
+    5284513006,
+    5284513005,
+    5284513010
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10543279",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887292,
+  "center": {
+    "lat": 49.5724582,
+    "lon": 16.8782481
+  },
+  "nodes": [
+    5284513022,
+    5284513021,
+    5284513020,
+    5284513019,
+    5284513018,
+    5284513017,
+    5284513016,
+    5284513015,
+    5284513014,
+    5284513013,
+    5284513012,
+    5284513011,
+    5284513022
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:levels": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10543163",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887293,
+  "center": {
+    "lat": 49.5726112,
+    "lon": 16.8782419
+  },
+  "nodes": [
+    5284513026,
+    5284513025,
+    5284513024,
+    5284513023,
+    5284513026
+  ],
+  "tags": {
+    "building": "industrial",
+    "building:ruian:type": "16",
+    "ref:ruian:building": "10543350",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887294,
+  "center": {
+    "lat": 49.5729309,
+    "lon": 16.8782717
+  },
+  "nodes": [
+    5284513030,
+    5284513029,
+    5284513028,
+    5284513027,
+    5284513030
+  ],
+  "tags": {
+    "building": "civic",
+    "building:ruian:type": "15",
+    "ref:ruian:building": "10543091",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887295,
+  "center": {
+    "lat": 49.5729182,
+    "lon": 16.8779563
+  },
+  "nodes": [
+    5284513038,
+    5284513037,
+    5284513036,
+    5284513035,
+    5284513034,
+    5284513033,
+    5284513032,
+    5284513031,
+    5284513038
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:levels": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10542949",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887296,
+  "center": {
+    "lat": 49.5729307,
+    "lon": 16.8770490
+  },
+  "nodes": [
+    5284513046,
+    5284513045,
+    5284513044,
+    5284513043,
+    5284513042,
+    5284513041,
+    5284513040,
+    5284513039,
+    5284513046
+  ],
+  "tags": {
+    "building": "civic",
+    "building:flats": "2",
+    "building:levels": "1",
+    "building:ruian:type": "15",
+    "ref:ruian:building": "10543007",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887297,
+  "center": {
+    "lat": 49.5726501,
+    "lon": 16.8779870
+  },
+  "nodes": [
+    5284513056,
+    5284513055,
+    5284513054,
+    5284513053,
+    5284513052,
+    5284513051,
+    5284513050,
+    5284513049,
+    5284513048,
+    5284513047,
+    5284513056
+  ],
+  "tags": {
+    "amenity": "place_of_worship",
+    "building": "chapel",
+    "building:ruian:type": "15",
+    "denomination": "catholic",
+    "heritage": "3",
+    "heritage:operator": "npu",
+    "ref:npu": "28002/7-5779",
+    "ref:ruian:building": "47740779",
+    "religion": "christian",
+    "source": "cuzk:ruian",
+    "wikidata": "Q38093090"
+  }
+},
+{
+  "type": "way",
+  "id": 546887298,
+  "center": {
+    "lat": 49.5720082,
+    "lon": 16.8770144
+  },
+  "nodes": [
+    5284513060,
+    5284513059,
+    5284513058,
+    5284513057,
+    5284513060
+  ],
+  "tags": {
+    "building": "barn",
+    "building:ruian:type": "13",
+    "ref:ruian:building": "42553750",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887299,
+  "center": {
+    "lat": 49.5722526,
+    "lon": 16.8775364
+  },
+  "nodes": [
+    5284513066,
+    5284513065,
+    5284513064,
+    5284513063,
+    5284513062,
+    5284513061,
+    5284513066
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:levels": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10543155",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887300,
+  "center": {
+    "lat": 49.5723867,
+    "lon": 16.8778436
+  },
+  "nodes": [
+    5284513074,
+    5284513073,
+    5284513072,
+    5284513071,
+    5284513070,
+    5284513069,
+    5284513068,
+    5284513067,
+    5284513074
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:levels": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10543830",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887301,
+  "center": {
+    "lat": 49.5720182,
+    "lon": 16.8785557
+  },
+  "nodes": [
+    5284513080,
+    5284513079,
+    5284513078,
+    5284513077,
+    5284513076,
+    5284513075,
+    5284513080
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:levels": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10543601",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887302,
+  "center": {
+    "lat": 49.5718016,
+    "lon": 16.8789916
+  },
+  "nodes": [
+    5284513086,
+    5284513085,
+    5284513084,
+    5284513083,
+    5284513082,
+    5284513081,
+    5284513086
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:levels": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10543562",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887303,
+  "center": {
+    "lat": 49.5718863,
+    "lon": 16.8794812
+  },
+  "nodes": [
+    5284513092,
+    5284513091,
+    5284513090,
+    5284513089,
+    5284513088,
+    5284513087,
+    5284513092
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:levels": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10543171",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887306,
+  "center": {
+    "lat": 49.5717648,
+    "lon": 16.8798643
+  },
+  "nodes": [
+    5284513098,
+    5284513097,
+    5284513096,
+    5284513095,
+    5284513094,
+    5284513093,
+    5284513098
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "2",
+    "building:levels": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10543741",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887309,
+  "center": {
+    "lat": 49.5718407,
+    "lon": 16.8802265
+  },
+  "nodes": [
+    5284513104,
+    5284513103,
+    5284513102,
+    5284513101,
+    5284513100,
+    5284513099,
+    5284513104
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:levels": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10543201",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887310,
+  "center": {
+    "lat": 49.5713813,
+    "lon": 16.8800417
+  },
+  "nodes": [
+    5284513109,
+    5284513108,
+    5284513107,
+    5284513106,
+    5284513109
+  ],
+  "tags": {
+    "building": "yes",
+    "building:ruian:type": "8",
+    "ref:ruian:building": "10543872",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887311,
+  "center": {
+    "lat": 49.5713514,
+    "lon": 16.8804150
+  },
+  "nodes": [
+    5284513115,
+    5284513114,
+    5284513113,
+    5284513112,
+    5284513111,
+    5284513110,
+    5284513115
+  ],
+  "tags": {
+    "building": "yes",
+    "building:ruian:type": "8",
+    "ref:ruian:building": "10543864",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887312,
+  "center": {
+    "lat": 49.5714578,
+    "lon": 16.8805305
+  },
+  "nodes": [
+    5284513119,
+    5284513118,
+    5284513117,
+    5284513116,
+    5284513119
+  ],
+  "tags": {
+    "building": "yes",
+    "building:ruian:type": "8",
+    "ref:ruian:building": "10543848",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887313,
+  "center": {
+    "lat": 49.5713088,
+    "lon": 16.8805822
+  },
+  "nodes": [
+    5284513329,
+    5284513328,
+    5284513327,
+    5284513326,
+    5284513325,
+    5284513324,
+    5284513323,
+    5284513322,
+    5284513321,
+    5284513120,
+    5284513329
+  ],
+  "tags": {
+    "building": "yes",
+    "building:levels": "3",
+    "building:ruian:type": "8",
+    "ref:ruian:building": "10543856",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887314,
+  "center": {
+    "lat": 49.5713107,
+    "lon": 16.8810322
+  },
+  "nodes": [
+    5284513337,
+    5284513336,
+    5284513335,
+    5284513334,
+    5284513333,
+    5284513332,
+    5284513331,
+    5284513330,
+    5284513337
+  ],
+  "tags": {
+    "building": "barn",
+    "building:ruian:type": "13",
+    "ref:ruian:building": "48425061",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887315,
+  "center": {
+    "lat": 49.5714859,
+    "lon": 16.8813785
+  },
+  "nodes": [
+    5284513341,
+    5284513340,
+    5284513344,
+    5284513345,
+    5284513339,
+    5284513338,
+    5284513341
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:levels": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10543244",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887316,
+  "center": {
+    "lat": 49.5715939,
+    "lon": 16.8814504
+  },
+  "nodes": [
+    5284513353,
+    5284513352,
+    5284513351,
+    5284513350,
+    5284513349,
+    5284513348,
+    5284513347,
+    5284513346,
+    5284513345,
+    5284513344,
+    5284513343,
+    5284513342,
+    5284513353
+  ],
+  "tags": {
+    "building": "house",
+    "building:flats": "1",
+    "building:ruian:type": "7",
+    "ref:ruian:building": "10543228",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887317,
+  "center": {
+    "lat": 49.5712934,
+    "lon": 16.8815168
+  },
+  "nodes": [
+    5284513357,
+    5284513356,
+    5284513355,
+    5284513354,
+    5284513357
+  ],
+  "tags": {
+    "building": "yes",
+    "building:ruian:type": "19",
+    "ref:ruian:building": "47740744",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 546887318,
+  "center": {
+    "lat": 49.5711347,
+    "lon": 16.8823059
+  },
+  "nodes": [
+    5284513363,
+    5284513362,
+    5284513361,
+    5284513360,
+    5284513359,
+    5284513358,
+    5284513363
+  ],
+  "tags": {
+    "building": "yes",
+    "building:ruian:type": "8",
+    "ref:ruian:building": "10543902",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 576907141,
+  "center": {
+    "lat": 49.5728299,
+    "lon": 16.8780897
+  },
+  "nodes": [
+    5532115149,
+    5532115148,
+    5532115147,
+    5532115146,
+    5532115149
+  ],
+  "tags": {
+    "building": "garage",
+    "building:ruian:type": "18",
+    "ref:ruian:building": "47729198",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 609955480,
+  "center": {
+    "lat": 49.5740956,
+    "lon": 16.8677890
+  },
+  "nodes": [
+    5776982320,
+    5776982319,
+    5776982318,
+    5776982317,
+    5776982316,
+    5776982315,
+    5776982314,
+    5776982313,
+    5776982320
+  ],
+  "tags": {
+    "building": "industrial",
+    "building:ruian:type": "16",
+    "ref:ruian:building": "49234633",
+    "source": "cuzk:ruian"
+  }
+},
+{
+  "type": "way",
+  "id": 1193912025,
+  "center": {
+    "lat": 49.5724916,
+    "lon": 16.8784541
+  },
+  "nodes": [
+    11082681494,
+    11082681493,
+    11082681492,
+    11082681491,
+    11082681494
+  ],
+  "tags": {
+    "building": "yes",
+    "building:levels": "1",
+    "building:ruian:type": "19",
+    "ref:ruian:building": "95852271",
+    "source": "cuzk:ruian",
+    "start_date": "2018-11-22"
+  }
+},
+{
+  "type": "way",
+  "id": 1193912026,
+  "center": {
+    "lat": 49.5732622,
+    "lon": 16.8721048
+  },
+  "nodes": [
+    11082681500,
+    11082681499,
+    11082681498,
+    11082681497,
+    11082681496,
+    11082681495,
+    11082681500
+  ],
+  "tags": {
+    "building": "yes",
+    "building:levels": "1",
+    "building:ruian:type": "19",
+    "ref:ruian:building": "106260375",
+    "source": "cuzk:ruian",
+    "start_date": "1962-12-30"
+  }
+},
+{
+  "type": "way",
+  "id": 1193912027,
+  "center": {
+    "lat": 49.5746527,
+    "lon": 16.8733418
+  },
+  "nodes": [
+    11082738106,
+    11082738105,
+    11082681504,
+    11082681503,
+    11082738106
+  ],
+  "tags": {
+    "building": "yes",
+    "building:levels": "1",
+    "building:ruian:type": "19",
+    "ref:ruian:building": "97466930",
+    "source": "cuzk:ruian",
+    "start_date": "2019-03-29"
+  }
+}
+
   ]
 }
