@@ -10,8 +10,14 @@ using SpatialSimulator.Ingestion;
 
 namespace SpatialSimulator.Api;
 
+/// <summary>
+/// Hlavní vstupní třída webové aplikace a REST API rozhraní pro Sémantický prostorový simulátor.
+/// </summary>
 public class Program
 {
+    /// <summary>
+    /// Vstupní bod programu (Main).
+    /// </summary>
     public static async Task Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
@@ -92,7 +98,7 @@ public class Program
         app.MapControllers();
         app.MapHub<SimulationHub>("/hubs/simulation");
 
-        // Pre-seed Runářov on startup if empty
+        // Pre-seed Real Runářov Geodata from OSM & RÚIAN on startup if empty
         using (var scope = app.Services.CreateScope())
         {
             var worldRepo = scope.ServiceProvider.GetRequiredService<IWorldRepository>();
@@ -102,8 +108,9 @@ public class Program
             var existing = await worldRepo.GetAsync("settlement_runarov");
             if (existing == null)
             {
-                var seeder = new RunarovSeeder(worldRepo, connRepo);
-                await seeder.SeedAsync();
+                string dataDir = Path.Combine(AppContext.BaseDirectory, "Data");
+                var realSeeder = new RealRunarovSeeder(worldRepo, connRepo);
+                await realSeeder.SeedRealRunarovAsync(dataDir);
 
                 // Generate rooms for Čp. 23
                 var genService = scope.ServiceProvider.GetRequiredService<IWorldGenerationService>();
@@ -116,7 +123,9 @@ public class Program
     }
 }
 
-// In-Memory Fallbacks for zero-setup execution
+/// <summary>
+/// In-Memory repozitář světa pro testovací účely.
+/// </summary>
 public class InMemoryWorldRepository : IWorldRepository
 {
     private readonly Dictionary<string, Domain.Entities.SpatialEntity> _store = new();
@@ -159,6 +168,9 @@ public class InMemoryWorldRepository : IWorldRepository
     }
 }
 
+/// <summary>
+/// In-Memory repozitář konektivity pro testovací účely.
+/// </summary>
 public class InMemoryConnectivityRepository : IConnectivityRepository
 {
     private readonly List<Domain.Graph.ConnectivityEdge> _edges = [];
@@ -170,6 +182,9 @@ public class InMemoryConnectivityRepository : IConnectivityRepository
     public Task UpdateStateAsync(string edgeId, string state) { var e = _edges.FirstOrDefault(x => x.Id == edgeId); if (e != null) e.State = state; return Task.CompletedTask; }
 }
 
+/// <summary>
+/// In-Memory repozitář událostí pro testovací účely.
+/// </summary>
 public class InMemoryEventRepository : IEventRepository
 {
     private readonly List<Domain.Events.SimEvent> _events = [];
