@@ -1,15 +1,18 @@
 using Microsoft.AspNetCore.SignalR;
-using SpatialSimulator.Domain.Events;
 
 namespace SpatialSimulator.Api.Hubs;
 
-public interface ISimulationClient
+/// <summary>
+/// SignalR rozhraní pro vícenásobné připojení webových klientoů v reálném čase.
+/// Motivace: Zajišťuje živé vysílání událostí z GTU streamu do administračního rozhraní.
+/// </summary>
+public class SimulationHub : Hub
 {
-    Task AgentMoved(string agentId, string fromNodeId, string toNodeId, DateTime simTime);
-    Task EventRecorded(SimEvent simEvent);
-    Task SimClockAdvanced(DateTime simTime);
-}
-
-public class SimulationHub : Hub<ISimulationClient>
-{
+    /// <summary>
+    /// Umožňuje klientovi přihlásit se k odebrání živých aktualizací ze simulace.
+    /// </summary>
+    public async Task JoinSimulationGroup(string groupName)
+    {
+        await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
+    }
 }

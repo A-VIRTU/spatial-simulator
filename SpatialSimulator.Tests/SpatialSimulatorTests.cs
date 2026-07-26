@@ -246,4 +246,46 @@ public class SpatialSimulatorTests
         Assert.InRange(lat, 48.0, 51.0);
         Assert.InRange(lon, 12.0, 19.0);
     }
+
+    [Fact]
+    public void TestRuianVfrXmlParser()
+    {
+        string vfrXml = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<vfr:VFR xmlns:vfr=""http://www.cuzk.cz/ruian/vfr/v1"" xmlns:gml=""http://www.opengis.net/gml/3.2"">
+    <vfr:StavebniObjekt>
+        <vfr:Kod>12345</vfr:Kod>
+        <vfr:CislaDomovni><vfr:Cislo>23</vfr:Cislo></vfr:CislaDomovni>
+        <vfr:PocetPodlazi>1</vfr:PocetPodlazi>
+        <gml:posList>564500 1052000</gml:posList>
+    </vfr:StavebniObjekt>
+</vfr:VFR>";
+
+        var parser = new RuianVfrParser();
+        var entities = parser.ParseVfrXml(vfrXml);
+
+        Assert.Single(entities);
+        Assert.Equal("Čp. 23", entities[0].Name);
+        Assert.Equal("building_ruian_12345", entities[0].Id);
+        Assert.NotNull(entities[0].Spatial?.GlobalAnchor);
+    }
+
+    [Fact]
+    public void TestOsmOverpassJsonParser()
+    {
+        string osmJson = @"{
+            ""elements"": [
+                { ""type"": ""node"", ""id"": 991, ""lat"": 49.543, ""lon"": 16.896, ""tags"": { ""amenity"": ""chapel"", ""name"": ""Kaplička"" } },
+                { ""type"": ""node"", ""id"": 992, ""lat"": 49.544, ""lon"": 16.897 },
+                { ""type"": ""way"", ""id"": 881, ""nodes"": [991, 992], ""tags"": { ""highway"": ""residential"" } }
+            ]
+        }";
+
+        var parser = new OsmOverpassParser();
+        var result = parser.ParseOverpassJson(osmJson);
+
+        Assert.Single(result.Entities);
+        Assert.Equal("Kaplička", result.Entities[0].Name);
+        Assert.Single(result.Edges);
+        Assert.Equal("Road", result.Edges[0].Kind);
+    }
 }

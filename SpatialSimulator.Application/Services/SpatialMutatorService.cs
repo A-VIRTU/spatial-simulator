@@ -1,116 +1,98 @@
-using SpatialSimulator.Domain.Components;
 using SpatialSimulator.Domain.Events;
 using SpatialSimulator.Domain.Repositories;
 
 namespace SpatialSimulator.Application.Services;
 
+/// <summary>
+/// Rozhraní mutátoru prostory pro manipulaci se stavy entit a pozicemi v simulaci.
+/// </summary>
 public interface ISpatialMutatorService
 {
-    Task<bool> MoveAgentAsync(string agentId, string viaEdgeId);
+    /// <summary>
+    /// Přemístí agenta do nové lokace a zaznamená událost v GTU logu.
+    /// </summary>
+    Task<bool> MoveAgentAsync(string agentId, string destinationLocationId);
+
+    /// <summary>
+    /// Zvedne/přebere předmět z lokace do vlastnictví/kapsy agenta.
+    /// </summary>
     Task<bool> TakeItemAsync(string agentId, string itemId);
-    Task<bool> PutItemAsync(string itemId, string containerId);
-    Task<bool> SetEdgeStateAsync(string edgeId, string state);
 }
 
+/// <summary>
+/// Mutátor prostorových vztahů provádějící změny v hierarchii a záznam událostí v GTU logu.
+/// Motivace: Zabezpečuje atomické změny polohy agentů a předmětů v databázi včetně vygenerování vzpomínek.
+/// </summary>
 public class SpatialMutatorService : ISpatialMutatorService
 {
-    private readonly IWorldRepository _worldRepo;
-    private readonly IConnectivityRepository _connectivityRepo;
-    private readonly IEventRepository _eventRepo;
+    private readonly IWorldRepository _worldRepository;
+    private readonly IConnectivityRepository _connectivityRepository;
+    private readonly IEventRepository _eventRepository;
 
-    public SpatialMutatorService(
-        IWorldRepository worldRepo,
-        IConnectivityRepository connectivityRepo,
-        IEventRepository eventRepo)
+    /// <summary>
+    /// Konstruktor přijímající repozitáře.
+    /// </summary>
+    public SpatialMutatorService(IWorldRepository worldRepository, IConnectivityRepository connectivityRepository, IEventRepository eventRepository)
     {
-        _worldRepo = worldRepo;
-        _connectivityRepo = connectivityRepo;
-        _eventRepo = eventRepo;
+        _worldRepository = worldRepository;
+        _connectivityRepository = connectivityRepository;
+        _eventRepository = eventRepository;
     }
 
-    public async Task<bool> MoveAgentAsync(string agentId, string viaEdgeId)
+    /// <summary>
+    /// Přemístí agenta a vytvoří událost přemístění.
+    /// </summary>
+    public async Task<bool> MoveAgentAsync(string agentId, string destinationLocationId)
     {
-        var agent = await _worldRepo.GetAsync(agentId);
-        if (agent == null || agent.Agent == null) return false;
+        var agent = await _worldRepository.GetAsync(agentId);
+        var dest = await _worldRepository.GetAsync(destinationLocationId);
+        if (agent == null || dest == null) return false;
 
-        var edge = await _connectivityRepo.GetAsync(viaEdgeId);
-        if (edge == null || edge.State == "Locked") return false;
+        string oldLocationId = agent.Agent?.CurrentLocationId ?? agent.ParentId ?? "";
+        var oldLoc = await _worldRepository.GetAsync(oldLocationId);
 
-        string currentLoc = agent.Agent.CurrentLocationId;
-        string targetLoc = edge.FromId == currentLoc ? edge.ToId : (edge.ToId == currentLoc && edge.Bidirectional ? edge.FromId : string.Empty);
+        await _worldRepository.ReparentAsync(agentId, destinationLocationId);
+        if (agent.Agent != null)
+        {
+            agent.Agent.CurrentLocationId = destinationLocationId;
+            agent.Agent.LastActedAt = DateTime.UtcNow;
+            await _worldRepository.ReplaceAsync(agent);
+        }
 
-        if (string.IsNullOrEmpty(targetLoc)) return false;
-
-        var targetNode = await _worldRepo.GetAsync(targetLoc);
-        if (targetNode == null) return false;
-
-        agent.Agent.CurrentLocationId = targetLoc;
-        agent.Agent.LastActedAt = DateTime.UtcNow;
-
-        await _worldRepo.ReparentAsync(agentId, targetLoc);
-
-        await _eventRepo.AddAsync(new SimEvent
+        await _eventRepository.AddAsync(new SimEvent
         {
             Kind = "Action",
-            LocationId = targetLoc,
+            LocationId = destinationLocationId,
             Participants = [agentId],
-            Text = $"{agent.Name} přechází z {currentLoc} do {targetNode.Name}.",
-            Importance = 3.0,
-            Provenance = new ProvenanceComponent { Source = "agent-action", Confidence = 1.0 }
+            Text = $"{agent.Name} přešel(a) z {oldLoc?.Name ?? oldLocationId} do {dest.Name}.",
+            Importance = 6.0,
+            Ts = DateTime.UtcNow
         });
 
         return true;
     }
 
+    /// <summary>
+    /// Zvedne předmět do vlastnictví agenta.
+    /// </summary>
     public async Task<bool> TakeItemAsync(string agentId, string itemId)
     {
-        var agent = await _worldRepo.GetAsync(agentId);
-        var item = await _worldRepo.GetAsync(itemId);
+        var agent = await _worldRepository.GetAsync(agentId);
+        var item = await _worldRepository.GetAsync(itemId);
         if (agent == null || item == null) return false;
 
-        string oldLoc = item.ParentId ?? string.Empty;
-        await _worldRepo.ReparentAsync(itemId, agentId);
+        await _worldRepository.ReparentAsync(itemId, agentId);
 
-        await _eventRepo.AddAsync(new SimEvent
+        await _eventRepository.AddAsync(new SimEvent
         {
             Kind = "Action",
-            LocationId = agent.Agent?.CurrentLocationId ?? oldLoc,
+            LocationId = agent.Agent?.CurrentLocationId ?? agent.ParentId,
             Participants = [agentId],
-            Text = $"{agent.Name} sebral předmět '{item.Name}'.",
-            Importance = 4.0,
-            Provenance = new ProvenanceComponent { Source = "agent-action", Confidence = 1.0 }
+            Text = $"{agent.Name} sebral předmět {item.Name}.",
+            Importance = 7.0,
+            Ts = DateTime.UtcNow
         });
 
-        return true;
-    }
-
-    public async Task<bool> PutItemAsync(string itemId, string containerId)
-    {
-        var item = await _worldRepo.GetAsync(itemId);
-        var container = await _worldRepo.GetAsync(containerId);
-        if (item == null || container == null) return false;
-
-        await _worldRepo.ReparentAsync(itemId, containerId);
-
-        await _eventRepo.AddAsync(new SimEvent
-        {
-            Kind = "Action",
-            LocationId = containerId,
-            Participants = [item.ParentId ?? containerId],
-            Text = $"Předmět '{item.Name}' byl vložen do '{container.Name}'.",
-            Importance = 3.0,
-            Provenance = new ProvenanceComponent { Source = "system-action", Confidence = 1.0 }
-        });
-
-        return true;
-    }
-
-    public async Task<bool> SetEdgeStateAsync(string edgeId, string state)
-    {
-        var edge = await _connectivityRepo.GetAsync(edgeId);
-        if (edge == null) return false;
-
-        await _connectivityRepo.UpdateStateAsync(edgeId, state);
         return true;
     }
 }

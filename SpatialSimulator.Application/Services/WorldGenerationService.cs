@@ -6,165 +6,149 @@ using SpatialSimulator.Domain.Repositories;
 
 namespace SpatialSimulator.Application.Services;
 
-public interface ILlmGenerator
-{
-    Task<List<ChildSpec>> GenerateChildrenAsync(SpatialEntity container, IReadOnlyList<SpatialEntity> ancestors);
-}
-
-public record ChildSpec(string Name, string Type, List<string> Tags, string Description, Dictionary<string, object>? Attributes = null);
-
+/// <summary>
+/// Rozhraní služby pro líné (on-demand) generování detailů prostorového světa.
+/// </summary>
 public interface IWorldGenerationService
 {
-    Task EnsureChildrenAsync(string containerId, GenerationState minState = GenerationState.Outlined);
+    /// <summary>
+    /// Zabezpečí vygenerování dětských entit (místností, podlaží) pod zadaným uzlem, pokud ještě nebyly vytvořeny.
+    /// </summary>
+    Task EnsureChildrenAsync(string entityId);
 }
 
-public class DefaultLlmGeneratorFallback : ILlmGenerator
+/// <summary>
+/// Rozhraní LLM klienta pro generování popisu interiéru v případě záložní generace.
+/// </summary>
+public interface ILlmClient
 {
-    public Task<List<ChildSpec>> GenerateChildrenAsync(SpatialEntity container, IReadOnlyList<SpatialEntity> ancestors)
-    {
-        var results = new List<ChildSpec>();
-        if (container.Type == SpatialEntityTypes.Building)
-        {
-            results.Add(new ChildSpec("Přízemí", SpatialEntityTypes.Floor, ["ground_floor"], "Přízemí budovy"));
-        }
-        else if (container.Type == SpatialEntityTypes.Floor)
-        {
-            results.Add(new ChildSpec("Vstupní chodba", SpatialEntityTypes.Room, ["corridor"], "Vstupní chodba"));
-            results.Add(new ChildSpec("Hlavní místnost", SpatialEntityTypes.Room, ["living_room"], "Hlavní obytný prostor"));
-        }
-        else if (container.Type == SpatialEntityTypes.Room)
-        {
-            results.Add(new ChildSpec("Stůl", SpatialEntityTypes.Furniture, ["table"], "Dřevěný stůl"));
-            results.Add(new ChildSpec("Židle", SpatialEntityTypes.Furniture, ["chair"], "Dřevěná židle"));
-        }
-        return Task.FromResult(results);
-    }
+    /// <summary>
+    /// Vygeneruje odpověď LLM modelu na zadaný prompt text.
+    /// </summary>
+    Task<string> GenerateTextAsync(string prompt);
 }
 
+/// <summary>
+/// Mock implementace LLM klienta pro testování bez aktivního klíče API.
+/// </summary>
+public class MockLlmClient : ILlmClient
+{
+    /// <summary>
+    /// Vrátí simulovaný text generovaný LLM modelem.
+    /// </summary>
+    public Task<string> GenerateTextAsync(string prompt) => Task.FromResult("Vygenerovaný popis místnosti z LLM šablony.");
+}
+
+/// <summary>
+/// Služba pro on-demand generování podlaží a místností budov.
+/// Motivace: Zabezpečuje líné domýšlení interiéru budov až ve chvíli, kdy agent vstoupí do dané budovy.
+/// </summary>
 public class WorldGenerationService : IWorldGenerationService
 {
-    private readonly IWorldRepository _worldRepo;
-    private readonly IConnectivityRepository _connectivityRepo;
-    private readonly ILlmGenerator _llmGenerator;
+    private readonly IWorldRepository _worldRepository;
+    private readonly IConnectivityRepository _connectivityRepository;
+    private readonly ILlmClient? _llmClient;
 
-    public WorldGenerationService(
-        IWorldRepository worldRepo,
-        IConnectivityRepository connectivityRepo,
-        ILlmGenerator? llmGenerator = null)
+    /// <summary>
+    /// Konstruktor přijímající repozitáře a nepovinného LLM klienta.
+    /// </summary>
+    public WorldGenerationService(IWorldRepository worldRepository, IConnectivityRepository connectivityRepository, ILlmClient? llmClient = null)
     {
-        _worldRepo = worldRepo;
-        _connectivityRepo = connectivityRepo;
-        _llmGenerator = llmGenerator ?? new DefaultLlmGeneratorFallback();
+        _worldRepository = worldRepository;
+        _connectivityRepository = connectivityRepository;
+        _llmClient = llmClient;
     }
 
-    public async Task EnsureChildrenAsync(string containerId, GenerationState minState = GenerationState.Outlined)
+    /// <summary>
+    /// Zabezpečí vygenerování obsahu entity na vyžádání.
+    /// </summary>
+    public async Task EnsureChildrenAsync(string entityId)
     {
-        var container = await _worldRepo.GetAsync(containerId);
-        if (container == null || container.Generation.State >= minState) return;
+        var entity = await _worldRepository.GetAsync(entityId);
+        if (entity == null || entity.Generation.State != GenerationState.NotGenerated) return;
 
-        var existingChildren = await _worldRepo.GetChildrenAsync(containerId);
-        if (existingChildren.Count > 0)
+        if (entity.Type == SpatialEntityTypes.Building)
         {
-            container.Generation.State = minState;
-            await _worldRepo.ReplaceAsync(container);
-            return;
+            await GenerateBuildingFloorsAsync(entity);
+        }
+        else if (entity.Type == SpatialEntityTypes.Floor)
+        {
+            await GenerateFloorRoomsAsync(entity);
         }
 
-        List<ChildSpec> specs = GenerateRuleBased(container);
-        if (specs.Count == 0)
+        entity.Generation.State = GenerationState.Outlined;
+        entity.Generation.GeneratedAt = DateTime.UtcNow;
+        await _worldRepository.ReplaceAsync(entity);
+    }
+
+    private async Task GenerateBuildingFloorsAsync(SpatialEntity building)
+    {
+        int floorsCount = 1;
+        if (building.Semantic.Attributes.TryGetValue("floors", out var fVal) && fVal is int fInt)
         {
-            var ancestors = await _worldRepo.GetAncestorsAsync(containerId);
-            specs = await _llmGenerator.GenerateChildrenAsync(container, ancestors);
+            floorsCount = fInt;
         }
 
-        var newEntities = new List<SpatialEntity>();
-
-        foreach (var spec in specs)
+        for (int i = 1; i <= floorsCount; i++)
         {
-            var child = new SpatialEntity
+            var floor = new SpatialEntity
             {
-                Name = spec.Name,
-                Type = spec.Type,
-                ParentId = containerId,
-                Semantic = new SemanticComponent
-                {
-                    Tags = spec.Tags,
-                    Description = spec.Description,
-                    Attributes = spec.Attributes ?? new Dictionary<string, object>()
-                },
-                Generation = new GenerationComponent
-                {
-                    State = GenerationState.Outlined,
-                    Method = "rule-template",
-                    GeneratedAt = DateTime.UtcNow
-                },
-                Provenance = new ProvenanceComponent
-                {
-                    Source = "rule-template",
-                    Confidence = 0.8,
-                    ExtractedAt = DateTime.UtcNow
-                }
+                Id = $"floor_{building.Id}_{i}",
+                Type = SpatialEntityTypes.Floor,
+                Name = $"{i}. NP (Podlaží {i})",
+                ParentId = building.Id,
+                Spatial = new SpatialComponent { Frame = "Local", LocalBoundingBox = new BoundingBox3D { X = 0, Y = 0, Z = (i - 1) * 3, W = 10, H = 3, D = 8 } },
+                Semantic = new SemanticComponent { Description = $"Podlaží č. {i} budovy {building.Name}." },
+                Generation = new GenerationComponent { State = GenerationState.NotGenerated, Method = "rule-template" }
             };
 
-            newEntities.Add(child);
+            await _worldRepository.AddAsync(floor);
         }
-
-        await _worldRepo.AddManyAsync(newEntities);
-
-        if (container.Type == SpatialEntityTypes.Floor && newEntities.Count > 1)
-        {
-            var edges = new List<ConnectivityEdge>();
-            for (int i = 0; i < newEntities.Count - 1; i++)
-            {
-                edges.Add(new ConnectivityEdge
-                {
-                    FromId = newEntities[i].Id,
-                    ToId = newEntities[i + 1].Id,
-                    Kind = "Door",
-                    Bidirectional = true,
-                    CostMeters = 2.0,
-                    State = "Open",
-                    Provenance = new ProvenanceComponent
-                    {
-                        Source = "rule-template",
-                        Confidence = 0.8
-                    }
-                });
-            }
-            await _connectivityRepo.AddManyAsync(edges);
-        }
-
-        container.Generation.State = minState;
-        container.Generation.GeneratedAt = DateTime.UtcNow;
-        await _worldRepo.ReplaceAsync(container);
     }
 
-    private static List<ChildSpec> GenerateRuleBased(SpatialEntity container)
+    private async Task GenerateFloorRoomsAsync(SpatialEntity floor)
     {
-        var specs = new List<ChildSpec>();
-
-        if (container.Type == SpatialEntityTypes.Building)
+        var rooms = new[]
         {
-            int floorCount = 1;
-            if (container.Semantic.Attributes.TryGetValue("floors", out var fVal) && int.TryParse(fVal.ToString(), out int parsedFloors))
-            {
-                floorCount = parsedFloors;
-            }
+            new { Id = $"room_{floor.Id}_kitchen", Name = "Kuchyň", Tag = "kitchen" },
+            new { Id = $"room_{floor.Id}_corridor", Name = "Chodba", Tag = "corridor" },
+            new { Id = $"room_{floor.Id}_living", Name = "Obývací pokoj", Tag = "living_room" },
+            new { Id = $"room_{floor.Id}_bedroom", Name = "Ložnice", Tag = "bedroom" }
+        };
 
-            for (int f = 1; f <= floorCount; f++)
-            {
-                string floorName = f == 1 ? "Přízemí" : $"{f}. patro";
-                specs.Add(new ChildSpec(floorName, SpatialEntityTypes.Floor, ["floor"], $"Podlaží {f} budovy {container.Name}"));
-            }
-        }
-        else if (container.Type == SpatialEntityTypes.Floor)
+        foreach (var r in rooms)
         {
-            specs.Add(new ChildSpec("Vstupní chodba", SpatialEntityTypes.Room, ["corridor"], "Vstupní chodba s věšákem"));
-            specs.Add(new ChildSpec("Kuchyň", SpatialEntityTypes.Room, ["kitchen"], "Kuchyň s oknem do dvora"));
-            specs.Add(new ChildSpec("Obývací pokoj", SpatialEntityTypes.Room, ["living_room"], "Obývací pokoj"));
-            specs.Add(new ChildSpec("Ložnice", SpatialEntityTypes.Room, ["bedroom"], "Ložnice"));
+            var roomEntity = new SpatialEntity
+            {
+                Id = r.Id,
+                Type = SpatialEntityTypes.Room,
+                Name = r.Name,
+                ParentId = floor.Id,
+                Semantic = new SemanticComponent
+                {
+                    Tags = ["room", r.Tag],
+                    Description = $"Místnost {r.Name} vygenerovaná pravidlovou šablonou."
+                },
+                Generation = new GenerationComponent { State = GenerationState.Detailed, Method = "rule-template" }
+            };
+
+            await _worldRepository.AddAsync(roomEntity);
         }
 
-        return specs;
+        // Vytvoření dveří mezi chodbou a ostatními místnostmi
+        string corridorId = $"room_{floor.Id}_corridor";
+        foreach (var r in rooms)
+        {
+            if (r.Id == corridorId) continue;
+            await _connectivityRepository.AddAsync(new ConnectivityEdge
+            {
+                Id = $"edge_door_{corridorId}_{r.Id}",
+                FromId = corridorId,
+                ToId = r.Id,
+                Kind = "Door",
+                CostMeters = 1.5,
+                State = "Open"
+            });
+        }
     }
 }

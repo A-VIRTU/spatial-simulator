@@ -4,43 +4,62 @@ using SpatialSimulator.Domain.Repositories;
 
 namespace SpatialSimulator.Api.Controllers;
 
+/// <summary>
+/// REST API ovladač pro správy a inspekce prostorových entit.
+/// Motivace: Poskytuje koncové body pro čtení entit, načítání stromových větví a přesuny v hierarchii.
+/// </summary>
 [ApiController]
 [Route("api/[controller]")]
 public class EntitiesController : ControllerBase
 {
-    private readonly IWorldRepository _worldRepo;
+    private readonly IWorldRepository _worldRepository;
 
-    public EntitiesController(IWorldRepository worldRepo)
+    /// <summary>
+    /// Konstruktor přijímající repozitář světa.
+    /// </summary>
+    public EntitiesController(IWorldRepository worldRepository)
     {
-        _worldRepo = worldRepo;
+        _worldRepository = worldRepository;
     }
 
+    /// <summary>
+    /// Načte detail jedné prostorové entity podle ID.
+    /// </summary>
     [HttpGet("{id}")]
     public async Task<ActionResult<SpatialEntity>> GetEntity(string id)
     {
-        var entity = await _worldRepo.GetAsync(id);
+        var entity = await _worldRepository.GetAsync(id);
         if (entity == null) return NotFound();
         return Ok(entity);
     }
 
+    /// <summary>
+    /// Načte přímé dětské uzly dané entity.
+    /// </summary>
     [HttpGet("{id}/children")]
-    public async Task<ActionResult<IReadOnlyList<SpatialEntity>>> GetChildren(string id)
+    public async Task<ActionResult<IEnumerable<SpatialEntity>>> GetChildren(string id)
     {
-        var children = await _worldRepo.GetChildrenAsync(id);
+        var children = await _worldRepository.GetChildrenAsync(id);
         return Ok(children);
     }
 
+    /// <summary>
+    /// Načte kompletní podstrom entit spadajících pod zadaný kořenový uzel.
+    /// </summary>
     [HttpGet("{id}/subtree")]
-    public async Task<ActionResult<IReadOnlyList<SpatialEntity>>> GetSubtree(string id, [FromQuery] int? maxDepth = null)
+    public async Task<ActionResult<IEnumerable<SpatialEntity>>> GetSubtree(string id)
     {
-        var subtree = await _worldRepo.GetSubtreeAsync(id, maxDepth);
+        var subtree = await _worldRepository.GetSubtreeAsync(id);
         return Ok(subtree);
     }
 
-    [HttpGet("{id}/ancestors")]
-    public async Task<ActionResult<IReadOnlyList<SpatialEntity>>> GetAncestors(string id)
+    /// <summary>
+    /// Přesune entitu pod nového rodiče (Reparenting).
+    /// </summary>
+    [HttpPost("{id}/reparent")]
+    public async Task<IActionResult> Reparent(string id, [FromQuery] string newParentId)
     {
-        var ancestors = await _worldRepo.GetAncestorsAsync(id);
-        return Ok(ancestors);
+        await _worldRepository.ReparentAsync(id, newParentId);
+        return NoContent();
     }
 }

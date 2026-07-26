@@ -1,114 +1,103 @@
 using QuikGraph;
 using QuikGraph.Algorithms;
+using QuikGraph.Algorithms.Observers;
+using QuikGraph.Algorithms.ShortestPath;
 using SpatialSimulator.Domain.Graph;
 using SpatialSimulator.Domain.Repositories;
 
 namespace SpatialSimulator.Application.Services;
 
+/// <summary>
+/// Rozhraní grafové služby konektivity pro průchod a vyhledávání cest v simulaci.
+/// </summary>
 public interface IConnectivityGraphService
 {
+    /// <summary>
+    /// Znovu načte hrany z repozitáře a sestaví graf propustnosti.
+    /// </summary>
     Task ReloadGraphAsync();
-    Task<IReadOnlyList<string>> FindPathAsync(string fromId, string toId);
-    Task<IReadOnlyList<ConnectivityEdge>> GetEdgesFromAsync(string nodeId);
+
+    /// <summary>
+    /// Vypočítá nejkratší dostupnou cestu mezi dvěma uzly pomocí Dijkstrova algoritmu.
+    /// </summary>
+    Task<List<string>> FindPathAsync(string startNodeId, string targetNodeId);
 }
 
-public class EdgeWrapper : IEdge<string>
-{
-    public string Source { get; }
-    public string Target { get; }
-    public ConnectivityEdge Edge { get; }
-
-    public EdgeWrapper(string source, string target, ConnectivityEdge edge)
-    {
-        Source = source;
-        Target = target;
-        Edge = edge;
-    }
-}
-
+/// <summary>
+/// Grafová služba konektivity využívající knihovnu QuikGraph pro výpočet nejkratších cest (Dijkstra).
+/// Motivace: Zajišťuje realistickou navigaci agentů přes dveře, chodby, ulice a cesty.
+/// </summary>
 public class ConnectivityGraphService : IConnectivityGraphService
 {
-    private readonly IConnectivityRepository _connectivityRepo;
-    private AdjacencyGraph<string, EdgeWrapper> _graph = new();
-    private readonly Dictionary<string, List<ConnectivityEdge>> _edgeLookup = new();
-    private readonly SemaphoreSlim _lock = new(1, 1);
+    private readonly IConnectivityRepository _connectivityRepository;
+    private BidirectionalGraph<string, Edge<string>> _graph = new();
+    private readonly Dictionary<Edge<string>, double> _costs = new();
 
-    public ConnectivityGraphService(IConnectivityRepository connectivityRepo)
+    /// <summary>
+    /// Konstruktor přijímající repozitář konektivity.
+    /// </summary>
+    public ConnectivityGraphService(IConnectivityRepository connectivityRepository)
     {
-        _connectivityRepo = connectivityRepo;
+        _connectivityRepository = connectivityRepository;
     }
 
+    /// <summary>
+    /// Znovu načte hrany a sestaví vnitřní QuikGraph strukturu.
+    /// </summary>
     public async Task ReloadGraphAsync()
     {
-        await _lock.WaitAsync();
-        try
-        {
-            var edges = await _connectivityRepo.GetAllEdgesAsync();
-            var newGraph = new AdjacencyGraph<string, EdgeWrapper>();
-            _edgeLookup.Clear();
+        var edges = await _connectivityRepository.GetAllEdgesAsync();
+        var graph = new BidirectionalGraph<string, Edge<string>>();
+        var costs = new Dictionary<Edge<string>, double>();
 
-            foreach (var edge in edges)
+        foreach (var edge in edges)
+        {
+            if (edge.State == "Locked") continue; // Uzamčené dveře nelze použít pro automatický pathfinding
+
+            graph.AddVertex(edge.FromId);
+            graph.AddVertex(edge.ToId);
+
+            var e1 = new Edge<string>(edge.FromId, edge.ToId);
+            graph.AddEdge(e1);
+            costs[e1] = edge.CostMeters;
+
+            if (edge.Bidirectional)
             {
-                if (edge.State == "Locked") continue;
-
-                if (!_edgeLookup.ContainsKey(edge.FromId)) _edgeLookup[edge.FromId] = [];
-                _edgeLookup[edge.FromId].Add(edge);
-
-                newGraph.AddVertex(edge.FromId);
-                newGraph.AddVertex(edge.ToId);
-                newGraph.AddEdge(new EdgeWrapper(edge.FromId, edge.ToId, edge));
-
-                if (edge.Bidirectional)
-                {
-                    if (!_edgeLookup.ContainsKey(edge.ToId)) _edgeLookup[edge.ToId] = [];
-                    _edgeLookup[edge.ToId].Add(edge);
-                    newGraph.AddEdge(new EdgeWrapper(edge.ToId, edge.FromId, edge));
-                }
+                var e2 = new Edge<string>(edge.ToId, edge.FromId);
+                graph.AddEdge(e2);
+                costs[e2] = edge.CostMeters;
             }
+        }
 
-            _graph = newGraph;
-        }
-        finally
-        {
-            _lock.Release();
-        }
+        _graph = graph;
+        _costs.Clear();
+        foreach (var kv in costs) _costs[kv.Key] = kv.Value;
     }
 
-    public async Task<IReadOnlyList<ConnectivityEdge>> GetEdgesFromAsync(string nodeId)
+    /// <summary>
+    /// Vyhledá nejkratší trasu mezi uzly v metrech.
+    /// </summary>
+    public Task<List<string>> FindPathAsync(string startNodeId, string targetNodeId)
     {
-        return await _connectivityRepo.GetEdgesFromAsync(nodeId);
-    }
+        if (!_graph.ContainsVertex(startNodeId) || !_graph.ContainsVertex(targetNodeId))
+            return Task.FromResult<List<string>>([]);
 
-    public async Task<IReadOnlyList<string>> FindPathAsync(string fromId, string toId)
-    {
-        if (fromId == toId) return [fromId];
+        Func<Edge<string>, double> edgeCost = e => _costs.TryGetValue(e, out double c) ? c : 1.0;
+        var algo = new DijkstraShortestPathAlgorithm<string, Edge<string>>(_graph, edgeCost);
 
-        await _lock.WaitAsync();
-        try
+        var predecessorObserver = new VertexPredecessorPathRecorderObserver<string, Edge<string>>();
+        using (predecessorObserver.Attach(algo))
         {
-            if (!_graph.ContainsVertex(fromId) || !_graph.ContainsVertex(toId))
-            {
-                return [];
-            }
-
-            var edgeCosts = new Func<EdgeWrapper, double>(e => e.Edge.CostMeters);
-            var tryGetPaths = _graph.ShortestPathsDijkstra(edgeCosts, fromId);
-
-            if (tryGetPaths(toId, out var path))
-            {
-                var result = new List<string> { fromId };
-                foreach (var edge in path)
-                {
-                    result.Add(edge.Target);
-                }
-                return result;
-            }
-
-            return [];
+            algo.Compute(startNodeId);
         }
-        finally
+
+        if (predecessorObserver.VerticesPredecessors.TryGetPath(targetNodeId, out IEnumerable<Edge<string>>? pathEdges) && pathEdges != null)
         {
-            _lock.Release();
+            var path = new List<string> { startNodeId };
+            path.AddRange(pathEdges.Select(e => e.Target));
+            return Task.FromResult(path);
         }
+
+        return Task.FromResult<List<string>>([]);
     }
 }

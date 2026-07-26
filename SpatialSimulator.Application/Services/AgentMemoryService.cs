@@ -3,71 +3,108 @@ using SpatialSimulator.Domain.Repositories;
 
 namespace SpatialSimulator.Application.Services;
 
-public record RetrievedMemory(SimEvent Event, double Score);
-
-public interface IAgentMemoryService
+/// <summary>
+/// Záznam vyhledané paměti agenta spojené se skóre z paměťového algoritmu.
+/// </summary>
+public class ScoredMemory
 {
-    Task RecordEventAsync(SimEvent simEvent);
-    Task<IReadOnlyList<RetrievedMemory>> RetrieveMemoriesAsync(string agentId, string queryText, int topK = 10);
+    /// <summary>
+    /// Záznam primární simulované události z GTU logu.
+    /// </summary>
+    public SimEvent Event { get; set; } = new();
+
+    /// <summary>
+    /// Celkové skóre paměti vypočítané dle vzorce Park et al. (2023).
+    /// </summary>
+    public double Score { get; set; }
+
+    /// <summary>
+    /// Časová složka čerstvosti vzpomínky (Recency).
+    /// </summary>
+    public double RecencyScore { get; set; }
+
+    /// <summary>
+    /// Složka důležitosti vzpomínky (Importance).
+    /// </summary>
+    public double ImportanceScore { get; set; }
+
+    /// <summary>
+    /// Složka sémantické relevantnosti k dotazu (Relevance).
+    /// </summary>
+    public double RelevanceScore { get; set; }
 }
 
+/// <summary>
+/// Rozhraní paměťové služby agentů.
+/// </summary>
+public interface IAgentMemoryService
+{
+    /// <summary>
+    /// Vyhledá a seřadí paměťové záznamy agenta odpovídající zadanému dotazu.
+    /// </summary>
+    Task<List<ScoredMemory>> RetrieveMemoriesAsync(string agentId, string query, int topK = 5);
+}
+
+/// <summary>
+/// Paměťová služba agentů implementující Stanford Generative Agents paměťový vzorec (Park et al. 2023).
+/// Skóre paměti = alpha_recency * Recency + alpha_importance * Importance + alpha_relevance * Relevance.
+/// Motivace: Zajišťuje realistické vyvolávání vzpomínek podle jejich čerstvosti, důležitosti a vztahu k aktuální situaci.
+/// </summary>
 public class AgentMemoryService : IAgentMemoryService
 {
-    private readonly IEventRepository _eventRepo;
-    private const double AlphaRecency = 1.0;
-    private const double BetaImportance = 1.0;
-    private const double GammaRelevance = 1.0;
+    private readonly IEventRepository _eventRepository;
 
-    public AgentMemoryService(IEventRepository eventRepo)
+    /// <summary>
+    /// Konstruktor přijímající repozitář událostí.
+    /// </summary>
+    public AgentMemoryService(IEventRepository eventRepository)
     {
-        _eventRepo = eventRepo;
+        _eventRepository = eventRepository;
     }
 
-    public async Task RecordEventAsync(SimEvent simEvent)
+    /// <summary>
+    /// Vyhledá a ohodnotí paměťové záznamy z paměťového streamu agenta.
+    /// </summary>
+    public async Task<List<ScoredMemory>> RetrieveMemoriesAsync(string agentId, string query, int topK = 5)
     {
-        if (string.IsNullOrEmpty(simEvent.Id))
+        var events = await _eventRepository.GetEventsForAgentAsync(agentId, 200);
+        if (events.Count == 0) return [];
+
+        double alphaRecency = 1.0;
+        double alphaImportance = 1.0;
+        double alphaRelevance = 1.0;
+
+        DateTime now = DateTime.UtcNow;
+        var scoredList = new List<ScoredMemory>();
+
+        foreach (var evt in events)
         {
-            simEvent.Id = Guid.NewGuid().ToString("n");
+            // 1. Recency score: exponenta z času od události (v hodinách)
+            double hoursAgo = (now - evt.Ts).TotalHours;
+            double recency = Math.Exp(-0.99 * hoursAgo);
+
+            // 2. Importance score: normalizovaná hodnota na škále 0..1
+            double importance = evt.Importance / 10.0;
+
+            // 3. Relevance score: jednoduchá textová shoda nebo kosinový odhad
+            double relevance = 0.1;
+            if (!string.IsNullOrWhiteSpace(query) && evt.Text.Contains(query, StringComparison.OrdinalIgnoreCase))
+            {
+                relevance = 1.0;
+            }
+
+            double totalScore = (alphaRecency * recency) + (alphaImportance * importance) + (alphaRelevance * relevance);
+
+            scoredList.Add(new ScoredMemory
+            {
+                Event = evt,
+                Score = totalScore,
+                RecencyScore = recency,
+                ImportanceScore = importance,
+                RelevanceScore = relevance
+            });
         }
-        await _eventRepo.AddAsync(simEvent);
-    }
 
-    public async Task<IReadOnlyList<RetrievedMemory>> RetrieveMemoriesAsync(string agentId, string queryText, int topK = 10)
-    {
-        var candidates = await _eventRepo.GetEventsForAgentAsync(agentId, limit: 200);
-        if (candidates.Count == 0) return Array.Empty<RetrievedMemory>();
-
-        var now = DateTime.UtcNow;
-        var queryTokens = queryText.ToLowerInvariant().Split([' ', ',', '.', ';', '!', '?'], StringSplitOptions.RemoveEmptyEntries);
-
-        var scored = candidates.Select(e =>
-        {
-            double recency = CalculateRecency(e.Ts, now);
-            double importance = Math.Clamp(e.Importance / 10.0, 0.0, 1.0);
-            double relevance = CalculateRelevance(e.Text, queryTokens);
-
-            double totalScore = (AlphaRecency * recency) + (BetaImportance * importance) + (GammaRelevance * relevance);
-            return new RetrievedMemory(e, totalScore);
-        })
-        .OrderByDescending(m => m.Score)
-        .Take(topK)
-        .ToList();
-
-        return scored;
-    }
-
-    private static double CalculateRecency(DateTime eventTs, DateTime now)
-    {
-        double hoursPassed = Math.Max(0, (now - eventTs).TotalHours);
-        return Math.Pow(0.99, hoursPassed);
-    }
-
-    private static double CalculateRelevance(string eventText, string[] queryTokens)
-    {
-        if (queryTokens.Length == 0 || string.IsNullOrWhiteSpace(eventText)) return 0.5;
-
-        string textLower = eventText.ToLowerInvariant();
-        int matches = queryTokens.Count(token => textLower.Contains(token));
-        return (double)matches / queryTokens.Length;
+        return scoredList.OrderByDescending(m => m.Score).Take(topK).ToList();
     }
 }
