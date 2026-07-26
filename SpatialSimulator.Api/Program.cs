@@ -1,3 +1,5 @@
+using MongoDB.Bson;
+using MongoDB.Driver;
 using SpatialSimulator.Agents;
 using SpatialSimulator.Api.Hubs;
 using SpatialSimulator.Application.Services;
@@ -17,8 +19,6 @@ public class Program
         // Add services to the container
         builder.Services.AddControllers();
         builder.Services.AddSignalR();
-        builder.Services.AddEndpointsApiExplorer();
-        builder.Services.AddSwaggerGen();
 
         builder.Services.AddCors(options =>
         {
@@ -28,27 +28,42 @@ public class Program
             });
         });
 
-        // Database setup with fallback to InMemory
+        // Database setup with robust MongoDB ping test & fallback to InMemory
         string connectionString = builder.Configuration.GetConnectionString("MongoDB") ?? "mongodb://localhost:27017";
         string dbName = "SpatialSimulator_Runarov";
 
         bool useMongo = false;
+        MongoDbContext? dbContext = null;
+
         try
         {
-            var dbContext = new MongoDbContext(connectionString, dbName);
+            var client = new MongoClient(connectionString);
+            var pingTask = client.GetDatabase(dbName).RunCommandAsync((Command<BsonDocument>)"{ping:1}");
+            if (await Task.WhenAny(pingTask, Task.Delay(2000)) == pingTask)
+            {
+                await pingTask;
+                dbContext = new MongoDbContext(connectionString, dbName);
+                await dbContext.EnsureIndexesAsync();
+                useMongo = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"MongoDB connection ping failed: {ex.Message}. Falling back to InMemory repositories.");
+            useMongo = false;
+        }
+
+        if (useMongo && dbContext != null)
+        {
+            Console.WriteLine($"Connected to MongoDB at {connectionString} (Database: {dbName}).");
             builder.Services.AddSingleton(dbContext);
             builder.Services.AddSingleton<IWorldRepository, MongoWorldRepository>();
             builder.Services.AddSingleton<IConnectivityRepository, MongoConnectivityRepository>();
             builder.Services.AddSingleton<IEventRepository, MongoEventRepository>();
-            useMongo = true;
         }
-        catch
+        else
         {
-            useMongo = false;
-        }
-
-        if (!useMongo)
-        {
+            Console.WriteLine("Running with InMemory repositories.");
             var inMemWorld = new InMemoryWorldRepository();
             var inMemConn = new InMemoryConnectivityRepository();
             var inMemEvent = new InMemoryEventRepository();
@@ -68,12 +83,6 @@ public class Program
         builder.Services.AddSingleton<AgentLoopDriver>();
 
         var app = builder.Build();
-
-        if (app.Environment.IsDevelopment())
-        {
-            app.UseSwagger();
-            app.UseSwaggerUI();
-        }
 
         app.UseCors();
         app.UseDefaultFiles();

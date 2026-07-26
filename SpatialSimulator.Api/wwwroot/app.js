@@ -4,7 +4,6 @@ let edgesStore = [];
 let eventsStore = [];
 let selectedEntityId = null;
 
-// Initialize on DOM load
 document.addEventListener('DOMContentLoaded', async () => {
     initTabs();
     initMap();
@@ -28,10 +27,15 @@ function initTabs() {
 
             tab.classList.add('active');
             const targetId = tab.dataset.tab;
-            document.getElementById(targetId).classList.add('active');
+            const targetContent = document.getElementById(targetId);
+            if (targetContent) {
+                targetContent.classList.add('active');
+            }
 
             if (targetId === 'tab-map' && map) {
-                setTimeout(() => map.invalidateSize(), 100);
+                setTimeout(() => {
+                    map.invalidateSize();
+                }, 100);
             } else if (targetId === 'tab-floorplan') {
                 renderFloorPlan();
             } else if (targetId === 'tab-tree') {
@@ -45,13 +49,17 @@ function initTabs() {
 
 // Leaflet Map Initialization
 function initMap() {
-    // Runářov center coords
-    map = L.map('map').setView([49.5427, 16.8963], 16);
+    // Runářov center coords: Lat 49.5427, Lon 16.8963
+    map = L.map('map', { zoomControl: true }).setView([49.5427, 16.8963], 16);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
         attribution: '© OpenStreetMap contributors'
     }).addTo(map);
+
+    setTimeout(() => {
+        if (map) map.invalidateSize();
+    }, 300);
 }
 
 // Load Data from API
@@ -85,9 +93,8 @@ async function loadData() {
 function renderMapMarkers() {
     if (!map) return;
 
-    // Clear existing markers
     map.eachLayer(layer => {
-        if (layer instanceof L.Marker || layer instanceof L.Polyline) {
+        if (layer instanceof L.Marker || layer instanceof L.CircleMarker || layer instanceof L.Polyline) {
             map.removeLayer(layer);
         }
     });
@@ -100,21 +107,25 @@ function renderMapMarkers() {
             const lon = anchor.lon;
 
             let color = '#38bdf8'; // Default cyan
+            let radius = 7;
+
             if (entity.type === 'Building') {
-                color = entity.generation?.state === 'Verified' ? '#38bdf8' : (entity.generation?.state === 'Detailed' ? '#4ade80' : '#fbbf24');
+                color = entity.generation?.state === 3 ? '#38bdf8' : (entity.generation?.state === 2 ? '#4ade80' : '#fbbf24');
             } else if (entity.type === 'Place') {
                 color = '#c084fc';
+                radius = 9;
             } else if (entity.type === 'Agent') {
                 color = '#f43f5e';
+                radius = 11;
             }
 
             const marker = L.circleMarker([lat, lon], {
-                radius: entity.type === 'Agent' ? 10 : (entity.type === 'Building' ? 7 : 8),
+                radius: radius,
                 fillColor: color,
-                color: '#fff',
+                color: '#ffffff',
                 weight: 2,
                 opacity: 1,
-                fillOpacity: 0.8
+                fillOpacity: 0.9
             }).addTo(map);
 
             marker.bindTooltip(`<b>${entity.name}</b><br/>Typ: ${entity.type}`);
@@ -135,7 +146,7 @@ function renderMapMarkers() {
                 color: edge.kind === 'Road' ? '#38bdf8' : '#94a3b8',
                 weight: edge.kind === 'Road' ? 3 : 2,
                 dashArray: edge.kind === 'Path' ? '4, 4' : null,
-                opacity: 0.6
+                opacity: 0.7
             }).addTo(map);
         }
     });
@@ -144,27 +155,28 @@ function renderMapMarkers() {
 // Render SVG FloorPlan for selected building
 function renderFloorPlan() {
     const svg = document.getElementById('floorplan-svg');
+    if (!svg) return;
     svg.innerHTML = '';
 
     // Draw house container border
     const houseRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-    houseRect.setAttribute('x', '50');
-    houseRect.setAttribute('y', '50');
-    houseRect.setAttribute('width', '700');
-    houseRect.setAttribute('height', '500');
+    houseRect.setAttribute('x', '40');
+    houseRect.setAttribute('y', '40');
+    houseRect.setAttribute('width', '720');
+    houseRect.setAttribute('height', '520');
     houseRect.setAttribute('rx', '12');
     houseRect.setAttribute('fill', '#1e293b');
-    houseRect.setAttribute('stroke', '#334155');
+    houseRect.setAttribute('stroke', '#374151');
     houseRect.setAttribute('stroke-width', '4');
     svg.appendChild(houseRect);
 
     // Get rooms generated for Čp. 23 přízemí
     const floorRooms = entitiesStore.filter(e => e.parentId === 'floor_building_cp_23_1' && e.type === 'Room');
     const defaultRooms = [
-        { name: 'Vstupní chodba', x: 80, y: 80, w: 200, h: 200 },
-        { name: 'Kuchyň', x: 300, y: 80, w: 420, h: 220 },
-        { name: 'Obývací pokoj', x: 80, y: 300, w: 340, h: 230 },
-        { name: 'Ložnice', x: 440, y: 320, w: 280, h: 210 }
+        { name: 'Vstupní chodba s věšákem', x: 70, y: 70, w: 220, h: 220 },
+        { name: 'Kuchyň s oknem do dvora', x: 310, y: 70, w: 430, h: 220 },
+        { name: 'Obývací pokoj', x: 70, y: 310, w: 350, h: 230 },
+        { name: 'Ložnice', x: 440, y: 310, w: 300, h: 230 }
     ];
 
     const roomsToRender = floorRooms.length > 0 ? floorRooms.map((r, i) => ({
@@ -182,7 +194,7 @@ function renderFloorPlan() {
         rect.setAttribute('y', r.y);
         rect.setAttribute('width', r.w);
         rect.setAttribute('height', r.h);
-        rect.setAttribute('rx', '6');
+        rect.setAttribute('rx', '8');
         rect.setAttribute('class', 'room-rect');
         rect.onclick = () => { if (r.id) selectEntity(r.id); };
 
@@ -201,17 +213,17 @@ function renderFloorPlan() {
     const agent = entitiesStore.find(e => e.type === 'Agent');
     if (agent) {
         const agentDot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-        agentDot.setAttribute('cx', '510');
-        agentDot.setAttribute('cy', '190');
-        agentDot.setAttribute('r', '12');
+        agentDot.setAttribute('cx', '525');
+        agentDot.setAttribute('cy', '180');
+        agentDot.setAttribute('r', '14');
         agentDot.setAttribute('class', 'agent-dot');
         agentDot.onclick = () => selectEntity(agent.id);
 
         const agentText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-        agentText.setAttribute('x', '510');
-        agentText.setAttribute('y', '225');
+        agentText.setAttribute('x', '525');
+        agentText.setAttribute('y', '215');
         agentText.setAttribute('class', 'room-label');
-        agentText.setAttribute('font-size', '12px');
+        agentText.setAttribute('font-size', '13px');
         agentText.textContent = agent.name;
 
         svg.appendChild(agentDot);
@@ -222,6 +234,7 @@ function renderFloorPlan() {
 // Render Containment Tree Explorer
 function renderTree() {
     const container = document.getElementById('tree-container');
+    if (!container) return;
     container.innerHTML = '';
 
     const root = entitiesStore.find(e => e.id === 'settlement_runarov');
@@ -260,7 +273,13 @@ function buildTreeNode(entity) {
 // Render GTU Timeline
 function renderTimeline() {
     const container = document.getElementById('events-container');
+    if (!container) return;
     container.innerHTML = '';
+
+    if (eventsStore.length === 0) {
+        container.innerHTML = '<p style="color:var(--text-secondary); text-align:center;">Zatím nebyly zaznamenány žádné události.</p>';
+        return;
+    }
 
     eventsStore.forEach(evt => {
         const card = document.createElement('div');
@@ -322,7 +341,6 @@ function selectEntity(id) {
         ${extraHtml}
     `;
 
-    // Highlight selected node in tree
     document.querySelectorAll('.tree-node-content').forEach(el => el.classList.remove('selected'));
 }
 
@@ -331,7 +349,7 @@ async function executeAgentStep() {
     try {
         const btn = document.getElementById('btn-step-agent');
         btn.disabled = true;
-        btn.textContent = '⏳ Zpracovávám...';
+        btn.innerHTML = '<span>⏳ Zpracovávám...</span>';
 
         const res = await fetch('/api/agents/agent_jana_novotna/step', { method: 'POST' });
         if (res.ok) {
@@ -340,7 +358,7 @@ async function executeAgentStep() {
             await loadData();
         }
         btn.disabled = false;
-        btn.innerHTML = '<span>⚡ Exec Krok agenty Jany</span>';
+        btn.innerHTML = '<span>⚡ Krok agenty Jany</span>';
     } catch (err) {
         console.error(err);
         document.getElementById('btn-step-agent').disabled = false;

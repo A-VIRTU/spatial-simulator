@@ -1,3 +1,4 @@
+using SpatialSimulator.Agents;
 using SpatialSimulator.Application.Services;
 using SpatialSimulator.Domain;
 using SpatialSimulator.Domain.Components;
@@ -28,7 +29,7 @@ public class InMemoryWorldRepository : IWorldRepository
 
     public Task<IReadOnlyList<SpatialEntity>> GetSubtreeAsync(string rootId, int? maxDepth = null)
     {
-        var results = _store.Values.Where(e => e.Ancestors.Contains(rootId)).ToList();
+        var results = _store.Values.Where(e => e.Ancestors.Contains(rootId) || e.Id == rootId).ToList();
         return Task.FromResult<IReadOnlyList<SpatialEntity>>(results);
     }
 
@@ -186,6 +187,56 @@ public class SpatialSimulatorTests
         Assert.Single(memories);
         Assert.Equal("ev1", memories[0].Event.Id);
         Assert.True(memories[0].Score > 1.0);
+    }
+
+    [Fact]
+    public async Task TestWorldGenerationServiceRuleExpansion()
+    {
+        var worldRepo = new InMemoryWorldRepository();
+        var connRepo = new InMemoryConnectivityRepository();
+        var genService = new WorldGenerationService(worldRepo, connRepo);
+
+        var building = new SpatialEntity
+        {
+            Id = "building_test",
+            Type = SpatialEntityTypes.Building,
+            Name = "Testovací dům",
+            Semantic = new SemanticComponent { Attributes = new Dictionary<string, object> { { "floors", 2 } } }
+        };
+        await worldRepo.AddAsync(building);
+
+        await genService.EnsureChildrenAsync(building.Id);
+
+        var floors = await worldRepo.GetChildrenAsync(building.Id);
+        Assert.Equal(2, floors.Count);
+        Assert.Equal(GenerationState.Outlined, building.Generation.State);
+    }
+
+    [Fact]
+    public async Task TestSpatialMutatorServiceItemMove()
+    {
+        var worldRepo = new InMemoryWorldRepository();
+        var connRepo = new InMemoryConnectivityRepository();
+        var eventRepo = new InMemoryEventRepository();
+        var mutator = new SpatialMutatorService(worldRepo, connRepo, eventRepo);
+
+        var room = new SpatialEntity { Id = "room_1", Type = SpatialEntityTypes.Room, Name = "Kuchyň" };
+        var agent = new SpatialEntity { Id = "agent_1", Type = SpatialEntityTypes.Agent, Name = "Jana", ParentId = room.Id };
+        var item = new SpatialEntity { Id = "item_sirky", Type = SpatialEntityTypes.Item, Name = "Sirky", ParentId = room.Id };
+
+        await worldRepo.AddAsync(room);
+        await worldRepo.AddAsync(agent);
+        await worldRepo.AddAsync(item);
+
+        bool taken = await mutator.TakeItemAsync("agent_1", "item_sirky");
+        Assert.True(taken);
+
+        var updatedItem = await worldRepo.GetAsync("item_sirky");
+        Assert.Equal("agent_1", updatedItem?.ParentId);
+
+        var events = await eventRepo.GetAllEventsAsync();
+        Assert.Single(events);
+        Assert.Contains("sebral předmět", events[0].Text);
     }
 
     [Fact]

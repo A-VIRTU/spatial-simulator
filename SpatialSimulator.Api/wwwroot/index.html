@@ -28,10 +28,10 @@
             </div>
             <div class="navbar-actions">
                 <div class="status-badge" id="sim-status">
-                    <span class="status-dot"></span> <span id="status-text">Simulace připravena</span>
+                    <span class="status-dot"></span> <span id="status-text">Simulace spuštěna (MongoDB)</span>
                 </div>
                 <button class="btn btn-primary" id="btn-step-agent">
-                    <span>⚡ Exec Krok agenty Jany</span>
+                    <span>⚡ Krok agenty Jany</span>
                 </button>
                 <button class="btn btn-secondary" id="btn-reload">
                     <span>🔄 Obnovit data</span>
@@ -40,24 +40,24 @@
         </header>
 
         <!-- View Switcher Tabs -->
-        <div class="tabs-bar">
+        <nav class="tabs-bar">
             <button class="tab-btn active" data-tab="tab-map">🗺️ Mapa lokality (MapView)</button>
             <button class="tab-btn" data-tab="tab-floorplan">🏢 Půdorys budovy (FloorPlanView)</button>
             <button class="tab-btn" data-tab="tab-tree">🌳 Strom obsahování (TreeExplorer)</button>
             <button class="tab-btn" data-tab="tab-timeline">📜 Časová osa GTU (Timeline)</button>
-        </div>
+        </nav>
 
-        <!-- Main Workspace Grid -->
-        <div class="main-content">
+        <!-- Main Workspace Layout -->
+        <main class="main-content">
             <div class="viewport-panel">
                 <!-- Tab 1: MapView -->
                 <div class="tab-content active" id="tab-map">
                     <div id="map"></div>
                     <div class="map-legend">
-                        <div class="legend-item"><span class="legend-color verified"></span> Verified / RÚIAN</div>
+                        <div class="legend-item"><span class="legend-color verified"></span> Verified / Katastr</div>
                         <div class="legend-item"><span class="legend-color detailed"></span> Detailed / OSM</div>
-                        <div class="legend-item"><span class="legend-color outlined"></span> Outlined / Rule</div>
-                        <div class="legend-item"><span class="legend-color agent"></span> Agent (Jana)</div>
+                        <div class="legend-item"><span class="legend-color outlined"></span> Outlined / Pravidlo</div>
+                        <div class="legend-item"><span class="legend-color agent"></span> Agent (Jana Novotná)</div>
                     </div>
                 </div>
 
@@ -84,7 +84,7 @@
                 <div class="tab-content" id="tab-tree">
                     <div class="tree-header">
                         <h3>Hierarchie containment stromu (od sídla po sirky v kapse)</h3>
-                        <span class="tree-hint">Kliknutím rozbalte uzly nebo vyberte entitu</span>
+                        <span class="tree-hint">Kliknutím rozbalte uzly nebo vyberte entitu pro inspekci</span>
                     </div>
                     <div class="tree-view" id="tree-container">
                         <!-- Containment tree dynamically rendered via JS -->
@@ -96,8 +96,7 @@
                     <div class="timeline-header">
                         <h3>Globální časová osa událostí (GTU Stream)</h3>
                         <div class="timeline-scrubber">
-                            <label>Filtr:</label>
-                            <input type="text" id="event-filter" placeholder="Hledat v událostech..." class="text-input">
+                            <input type="text" id="event-filter" placeholder="Filtr událostí..." class="text-input">
                         </div>
                     </div>
                     <div class="events-list" id="events-container">
@@ -115,11 +114,11 @@
                 <div class="inspector-body" id="insp-body">
                     <div class="empty-state">
                         <div class="empty-icon">👈</div>
-                        <p>Klikněte na jakoukoliv budovu v mapě, místnost v půdorysu nebo položku ve stromu pro zobrazení detailních informací.</p>
+                        <p>Klikněte na budovu v mapě, místnost v půdorysu nebo položku ve stromu pro zobrazení detailních atributů a paměti agenta.</p>
                     </div>
                 </div>
             </aside>
-        </div>
+        </main>
     </div>
 
     <script src="app.js"></script>

@@ -1,6 +1,5 @@
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
-using MongoDB.Bson.Serialization.IdGenerators;
 using MongoDB.Bson.Serialization.Options;
 using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Driver;
@@ -35,7 +34,6 @@ public class MongoDbContext
 
     public async Task EnsureIndexesAsync()
     {
-        // Entities indices
         var entityIndexBuilder = Builders<SpatialEntity>.IndexKeys;
         await Entities.Indexes.CreateManyAsync([
             new CreateIndexModel<SpatialEntity>(entityIndexBuilder.Ascending(e => e.ParentId)),
@@ -46,14 +44,12 @@ public class MongoDbContext
             new CreateIndexModel<SpatialEntity>(entityIndexBuilder.Ascending("ExternalRefs.osm"), new CreateIndexOptions { Sparse = true })
         ]);
 
-        // Edges indices
         var edgeIndexBuilder = Builders<ConnectivityEdge>.IndexKeys;
         await Edges.Indexes.CreateManyAsync([
             new CreateIndexModel<ConnectivityEdge>(edgeIndexBuilder.Ascending(e => e.FromId)),
             new CreateIndexModel<ConnectivityEdge>(edgeIndexBuilder.Ascending(e => e.ToId))
         ]);
 
-        // Events indices
         var eventIndexBuilder = Builders<SimEvent>.IndexKeys;
         await Events.Indexes.CreateManyAsync([
             new CreateIndexModel<SimEvent>(eventIndexBuilder.Ascending(e => e.Participants).Descending(e => e.Ts)),
@@ -77,21 +73,21 @@ public class MongoDbContext
         {
             cm.AutoMap();
             cm.SetIgnoreExtraElements(true);
-            cm.MapIdMember(x => x.Id).SetIdGenerator(StringObjectIdGenerator.Instance).SetSerializer(new StringSerializer(BsonType.ObjectId));
+            cm.MapIdMember(x => x.Id).SetSerializer(new StringSerializer(BsonType.String));
         });
 
         BsonClassMap.RegisterClassMap<ConnectivityEdge>(cm =>
         {
             cm.AutoMap();
             cm.SetIgnoreExtraElements(true);
-            cm.MapIdMember(x => x.Id).SetIdGenerator(StringObjectIdGenerator.Instance).SetSerializer(new StringSerializer(BsonType.ObjectId));
+            cm.MapIdMember(x => x.Id).SetSerializer(new StringSerializer(BsonType.String));
         });
 
         BsonClassMap.RegisterClassMap<SimEvent>(cm =>
         {
             cm.AutoMap();
             cm.SetIgnoreExtraElements(true);
-            cm.MapIdMember(x => x.Id).SetIdGenerator(StringObjectIdGenerator.Instance).SetSerializer(new StringSerializer(BsonType.ObjectId));
+            cm.MapIdMember(x => x.Id).SetSerializer(new StringSerializer(BsonType.String));
         });
     }
 }

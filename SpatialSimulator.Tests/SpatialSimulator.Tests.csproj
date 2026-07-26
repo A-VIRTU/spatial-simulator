@@ -23,6 +23,7 @@
     <ProjectReference Include="..\SpatialSimulator.Application\SpatialSimulator.Application.csproj" />
     <ProjectReference Include="..\SpatialSimulator.Infrastructure\SpatialSimulator.Infrastructure.csproj" />
     <ProjectReference Include="..\SpatialSimulator.Ingestion\SpatialSimulator.Ingestion.csproj" />
+    <ProjectReference Include="..\SpatialSimulator.Agents\SpatialSimulator.Agents.csproj" />
   </ItemGroup>
 
 </Project>
