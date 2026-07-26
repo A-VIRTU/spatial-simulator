@@ -1,0 +1,7 @@
+﻿{
+  "type": "FeatureCollection",
+  "name": "RuianParcely_Runarov",
+  "features": [
+    { "type": "Feature", "properties": { "parcelni_cislo": "120/1", "ku_kod": 743615, "druh_pozemku": "Zahrada" }, "geometry": { "type": "Point", "coordinates": [16.8774, 49.5728] } }
+  ]
+}

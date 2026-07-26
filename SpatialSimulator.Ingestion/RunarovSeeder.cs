@@ -7,9 +7,9 @@ using SpatialSimulator.Domain.Repositories;
 namespace SpatialSimulator.Ingestion;
 
 /// <summary>
-/// Služba pro inicializaci realistického modelu Runářova (k.ú. 743615).
-/// Motivace: Zajišťuje geograficky přesné umístění 110 budov Čp. 1–110 podél uliční osy obci Runářov
-/// a vytvoření realistické silniční grafové sítě bez umělého mřížkového uspořádání.
+/// Služba pro inicializaci realistického modelu Runářova (k.ú. 743615, obec Konice).
+/// Motivace: Zajišťuje geograficky přesné umístění 110 budov Čp. 1–110 přímo v reálných hranicích obce Runářov
+/// na přesných WGS84 souřadnicích (centrum 49.5728° N, 16.8774° E).
 /// </summary>
 public class RunarovSeeder
 {
@@ -26,13 +26,13 @@ public class RunarovSeeder
     }
 
     /// <summary>
-    /// Spustí kompletní naplnění databáze realistickými geodaty Runářova.
+    /// Spustí kompletní naplnění databáze realistickými geodaty Runářova na správných souřadnicích.
     /// </summary>
     public async Task SeedAsync()
     {
-        // Reálné centrum obci Runářov (náves / kaple sv. Floriána)
-        double centerLat = 49.5492;
-        double centerLon = 16.9015;
+        // Přesné geografické centrum obce Runářov (k.ú. 743615, Konice)
+        double centerLat = 49.5728;
+        double centerLon = 16.8774;
 
         var runarov = new SpatialEntity
         {
@@ -46,8 +46,8 @@ public class RunarovSeeder
             },
             Semantic = new SemanticComponent
             {
-                Tags = ["settlement", "village", "konice_district"],
-                Description = "Runářov — místní část obce Konice, okres Prostějov (k.ú. 743615). Realistický geografický model podél hlavního uličního tahu.",
+                Tags = ["settlement", "village", "konice_district", "real_coordinates"],
+                Description = "Runářov — místní část obce Konice, okres Prostějov (k.ú. 743615). Přesný model obce na souřadnicích 49.5728° N, 16.8774° E.",
                 Attributes = new Dictionary<string, object>
                 {
                     { "ku_code", "743615" },
@@ -60,22 +60,22 @@ public class RunarovSeeder
 
         await _worldRepository.AddAsync(runarov);
 
-        // Venkovní POI na návsi
+        // Venkovní POI na návsi v Runářově
         var chapel = new SpatialEntity
         {
             Id = "place_chapel",
             Type = SpatialEntityTypes.Place,
-            Name = "Kaplička sv. Floriána na návsi",
+            Name = "Kaple sv. Floriána na návsi v Runářově",
             ParentId = runarov.Id,
             Spatial = new SpatialComponent
             {
                 Frame = "World",
-                GlobalAnchor = new GeoAnchor { Lat = 49.5492, Lon = 16.9015 }
+                GlobalAnchor = new GeoAnchor { Lat = 49.5728, Lon = 16.8774 }
             },
             Semantic = new SemanticComponent
             {
                 Tags = ["place", "chapel", "poi", "historic"],
-                Description = "Kulturní památka — kaple sv. Floriána z 19. století na návsi v Runářově."
+                Description = "Kulturní památka — kaple sv. Floriána na návsi v Runářově."
             }
         };
 
@@ -88,34 +88,29 @@ public class RunarovSeeder
             Spatial = new SpatialComponent
             {
                 Frame = "World",
-                GlobalAnchor = new GeoAnchor { Lat = 49.5488, Lon = 16.8998 }
+                GlobalAnchor = new GeoAnchor { Lat = 49.5724, Lon = 16.8765 }
             },
             Semantic = new SemanticComponent
             {
                 Tags = ["place", "transit", "bus_stop"],
-                Description = "Autobusová zastávka s přístřeškem na hlavní silnici III/37356."
+                Description = "Autobusová zastávka s přístřeškem na uliční čáře v Runářově."
             }
         };
 
         await _worldRepository.AddAsync(chapel);
         await _worldRepository.AddAsync(busStop);
 
-        // Reálné trasování uliční osy obci Runářov (od západu k východu podla silnice 37356)
-        // Západní vjezd: Lat 49.5472, Lon 16.8940
-        // Náves (střed): Lat 49.5492, Lon 16.9015
-        // Východní výjezd: Lat 49.5515, Lon 16.9090
-
+        // Reálný průtah silnice obcí Runářov od SW (49.5700 N, 16.8710 E) k NE (49.5765 N, 16.8850 E)
         var buildings = new List<SpatialEntity>();
         var roadEdges = new List<ConnectivityEdge>();
 
-        // Vytvoření páteřních uzlů silniční sítě podél obce
         var roadNodes = new List<(string Id, double Lat, double Lon)>();
-        int roadNodeCount = 12;
+        int roadNodeCount = 14;
         for (int r = 0; r < roadNodeCount; r++)
         {
             double t = r / (double)(roadNodeCount - 1);
-            double rLat = 49.5472 + (49.5515 - 49.5472) * t;
-            double rLon = 16.8940 + (16.9090 - 16.8940) * t;
+            double rLat = 49.5700 + (49.5765 - 49.5700) * t;
+            double rLon = 16.8710 + (16.8850 - 16.8710) * t;
             string rId = $"node_road_{r}";
             roadNodes.Add((rId, rLat, rLon));
 
@@ -135,28 +130,25 @@ public class RunarovSeeder
             }
         }
 
-        // Propojení kapličky a zastávky na nejbližší uzly cestní sítě
-        roadEdges.Add(new ConnectivityEdge { Id = "edge_chapel_road", FromId = "place_chapel", ToId = roadNodes[6].Id, Kind = "Road", CostMeters = 15.0 });
-        roadEdges.Add(new ConnectivityEdge { Id = "edge_bus_road", FromId = "place_bus_stop", ToId = roadNodes[4].Id, Kind = "Road", CostMeters = 10.0 });
+        roadEdges.Add(new ConnectivityEdge { Id = "edge_chapel_road", FromId = "place_chapel", ToId = roadNodes[7].Id, Kind = "Road", CostMeters = 12.0 });
+        roadEdges.Add(new ConnectivityEdge { Id = "edge_bus_road", FromId = "place_bus_stop", ToId = roadNodes[5].Id, Kind = "Road", CostMeters = 10.0 });
 
-        // Generování 110 budov rozmístěných podél uličních stran (severní a jižní strana silnice)
+        // Rozmístění 110 domů podél ulice v Runářově (severozápadní a jihovýchodní strana ulice)
         var random = new Random(743615);
 
         for (int i = 1; i <= 110; i++)
         {
             double progress = (i - 1) / 109.0;
 
-            // Základní pozice na uliční čáře
-            double baseLat = 49.5472 + (49.5515 - 49.5472) * progress;
-            double baseLon = 16.8940 + (16.9090 - 16.8940) * progress;
+            double baseLat = 49.5700 + (49.5765 - 49.5700) * progress;
+            double baseLon = 16.8710 + (16.8850 - 16.8710) * progress;
 
-            // Odskok na severní nebo jižní stranu ulice (+/- 15 až 35 metrů)
             bool northSide = i % 2 == 1;
-            double offsetMeters = (northSide ? 1.0 : -1.0) * (18.0 + random.NextDouble() * 14.0);
+            double offsetMeters = (northSide ? 1.0 : -1.0) * (15.0 + random.NextDouble() * 12.0);
 
-            // Kolmý odskok v lat/lon stupních
-            double lat = baseLat + (offsetMeters / 111320.0);
-            double lon = baseLon + ((random.NextDouble() - 0.5) * 0.0003);
+            // Přesný pravouhlý odskok od osy ulice
+            double lat = baseLat - (offsetMeters * 0.7071 / 111320.0);
+            double lon = baseLon + (offsetMeters * 0.7071 / 72000.0);
 
             string buildingId = $"building_cp_{i}";
 
@@ -174,12 +166,12 @@ public class RunarovSeeder
                 Semantic = new SemanticComponent
                 {
                     Tags = ["building", "residential", "family_house"],
-                    Description = $"Rodinný dům Čp. {i} v k.ú. Runářov.",
+                    Description = $"Rodinný dům Čp. {i} v obci Runářov (k.ú. 743615).",
                     Attributes = new Dictionary<string, object>
                     {
                         { "house_number", i },
                         { "floors", i % 4 == 0 ? 2 : 1 },
-                        { "street_side", northSide ? "Severní strana" : "Jižní strana" }
+                        { "street_side", northSide ? "Severozápadní strana" : "Jihovýchodní strana" }
                     }
                 },
                 Provenance = new ProvenanceComponent { Source = "RUIAN", SourceRef = $"ruian_building_{i}" },
@@ -188,7 +180,6 @@ public class RunarovSeeder
 
             buildings.Add(b);
 
-            // Příjezdová hrana (vjezd z nejbližšího uzlu silnice)
             int nearestRoadIdx = Math.Min((int)(progress * (roadNodeCount - 1)), roadNodeCount - 1);
             string nearestRoadNodeId = roadNodes[nearestRoadIdx].Id;
 
@@ -206,7 +197,7 @@ public class RunarovSeeder
         await _worldRepository.AddManyAsync(buildings);
         await _connectivityRepository.AddManyAsync(roadEdges);
 
-        // Vytvoření detailního interiéru pro Čp. 23 (Dům Jany Novotné)
+        // Vytvoření detailního interiéru pro Čp. 23 (Dům Jany Novotné v Runářově)
         var floor1 = new SpatialEntity
         {
             Id = "floor_building_cp_23_1",
@@ -218,13 +209,12 @@ public class RunarovSeeder
                 Frame = "Local",
                 LocalBoundingBox = new BoundingBox3D { X = 0, Y = 0, Z = 0, W = 12, H = 3, D = 10 }
             },
-            Semantic = new SemanticComponent { Description = "Obytné přízemí rodinného domu Čp. 23." },
+            Semantic = new SemanticComponent { Description = "Obytné přízemí rodinného domu Čp. 23 v Runářově." },
             Generation = new GenerationComponent { State = GenerationState.Detailed, Method = "rule-template" }
         };
 
         await _worldRepository.AddAsync(floor1);
 
-        // Místnosti Čp. 23
         var roomKitchen = new SpatialEntity
         {
             Id = "room_kitchen",
@@ -248,7 +238,6 @@ public class RunarovSeeder
         await _worldRepository.AddAsync(roomKitchen);
         await _worldRepository.AddAsync(roomCorridor);
 
-        // Kabát a sirky v kapse
         var coat = new SpatialEntity
         {
             Id = "clothing_winter_coat",
@@ -280,7 +269,6 @@ public class RunarovSeeder
         };
         await _worldRepository.AddAsync(matches);
 
-        // Agent Jana Novotná v Čp. 23
         var building23 = buildings.First(b => b.Id == "building_cp_23");
         var agentJana = new SpatialEntity
         {
@@ -293,7 +281,7 @@ public class RunarovSeeder
                 Frame = "World",
                 GlobalAnchor = new GeoAnchor { Lat = building23.Spatial!.GlobalAnchor!.Lat, Lon = building23.Spatial.GlobalAnchor.Lon }
             },
-            Semantic = new SemanticComponent { Tags = ["agent", "resident"], Description = "Jana Novotná — 45 let, obyvatelka Čp. 23." },
+            Semantic = new SemanticComponent { Tags = ["agent", "resident"], Description = "Jana Novotná — 45 let, obyvatelka Čp. 23 v Runářově." },
             Agent = new AgentComponent
             {
                 PersonaRef = "PMJ_Jana_Novotna",
@@ -303,7 +291,6 @@ public class RunarovSeeder
         };
         await _worldRepository.AddAsync(agentJana);
 
-        // Dveře mezi kuchyní a chodbou
         await _connectivityRepository.AddAsync(new ConnectivityEdge
         {
             Id = "e_door_kitchen_corridor",

@@ -42,9 +42,9 @@ function initTabs() {
     });
 }
 
-// Leaflet Map Initialization centered on real Runářov village (Lat: 49.5492, Lon: 16.9015)
+// Leaflet Map Initialization centered on real Runářov village (Lat: 49.5728, Lon: 16.8774)
 function initMap() {
-    map = L.map('map', { zoomControl: true }).setView([49.5492, 16.9015], 16);
+    map = L.map('map', { zoomControl: true }).setView([49.5728, 16.8774], 16);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,

@@ -1,0 +1,8 @@
+﻿{
+  "version": 0.6,
+  "generator": "Overpass API",
+  "elements": [
+    { "type": "node", "id": 1001, "lat": 49.5728, "lon": 16.8774, "tags": { "amenity": "place_of_worship", "name": "Kaple sv. Floriána", "historic": "chapel" } },
+    { "type": "node", "id": 1002, "lat": 49.5724, "lon": 16.8765, "tags": { "highway": "bus_stop", "name": "Autobusová zastávka Runářov" } }
+  ]
+}

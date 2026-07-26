@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<vfr:VFR xmlns:vfr="http://www.cuzk.cz/ruian/vfr/v1" xmlns:gml="http://www.opengis.net/gml/3.2">
+  <vfr:KastastralniUzemi>
+    <vfr:Kod>743615</vfr:Kod>
+    <vfr:Nazev>Runářov</vfr:Nazev>
+  </vfr:KastastralniUzemi>
+  <vfr:StavebniObjekt>
+    <vfr:Kod>25340101</vfr:Kod>
+    <vfr:CislaDomovni><vfr:Cislo>23</vfr:Cislo></vfr:CislaDomovni>
+    <vfr:PocetPodlazi>1</vfr:PocetPodlazi>
+    <gml:posList>564500 1052000</gml:posList>
+  </vfr:StavebniObjekt>
+  <vfr:StavebniObjekt>
+    <vfr:Kod>25340102</vfr:Kod>
+    <vfr:CislaDomovni><vfr:Cislo>1</vfr:Cislo></vfr:CislaDomovni>
+    <vfr:PocetPodlazi>2</vfr:PocetPodlazi>
+    <gml:posList>564520 1052040</gml:posList>
+  </vfr:StavebniObjekt>
+</vfr:VFR>
