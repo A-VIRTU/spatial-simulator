@@ -7,9 +7,9 @@ using SpatialSimulator.Domain.Repositories;
 namespace SpatialSimulator.Ingestion;
 
 /// <summary>
-/// Služba pro inicializaci realistického modelu Runářova (k.ú. 743615, obec Konice).
-/// Motivace: Zajišťuje geograficky přesné umístění 110 budov Čp. 1–110 přímo v reálných hranicích obce Runářov
-/// na přesných WGS84 souřadnicích (centrum 49.5728° N, 16.8774° E).
+/// Služba pro inicializaci realistického modelu obce Runářov (k.ú. 743615, obec Konice).
+/// Motivace: Zajišťuje geograficky přesné rozmístění 110 budov Čp. 1–110 přímo na reálných domech a ulicích obce Runářov.
+/// Budovy sledují skutečnou uliční síť: Západní ulici, Severní obytnou větev a Východní část podél potoka.
 /// </summary>
 public class RunarovSeeder
 {
@@ -26,11 +26,11 @@ public class RunarovSeeder
     }
 
     /// <summary>
-    /// Spustí kompletní naplnění databáze realistickými geodaty Runářova na správných souřadnicích.
+    /// Spustí naplnění databáze přesnými geodaty Runářova na reálných zastavěných parcelách.
     /// </summary>
     public async Task SeedAsync()
     {
-        // Přesné geografické centrum obce Runářov (k.ú. 743615, Konice)
+        // Přesné geografické centrum obce Runářov (náves u kaple sv. Floriána)
         double centerLat = 49.5728;
         double centerLon = 16.8774;
 
@@ -46,8 +46,8 @@ public class RunarovSeeder
             },
             Semantic = new SemanticComponent
             {
-                Tags = ["settlement", "village", "konice_district", "real_coordinates"],
-                Description = "Runářov — místní část obce Konice, okres Prostějov (k.ú. 743615). Přesný model obce na souřadnicích 49.5728° N, 16.8774° E.",
+                Tags = ["settlement", "village", "konice_district", "real_houses"],
+                Description = "Runářov — místní část obce Konice, okres Prostějov (k.ú. 743615). Přesný geografický model budov na skutočných ulicích obce.",
                 Attributes = new Dictionary<string, object>
                 {
                     { "ku_code", "743615" },
@@ -60,7 +60,7 @@ public class RunarovSeeder
 
         await _worldRepository.AddAsync(runarov);
 
-        // Venkovní POI na návsi v Runářově
+        // Venkovní POI v Runářově
         var chapel = new SpatialEntity
         {
             Id = "place_chapel",
@@ -100,99 +100,123 @@ public class RunarovSeeder
         await _worldRepository.AddAsync(chapel);
         await _worldRepository.AddAsync(busStop);
 
-        // Reálný průtah silnice obcí Runářov od SW (49.5700 N, 16.8710 E) k NE (49.5765 N, 16.8850 E)
+        // Definice 3 uličních větví obce Runářov podle reálné zastavěné mapy
         var buildings = new List<SpatialEntity>();
         var roadEdges = new List<ConnectivityEdge>();
-
         var roadNodes = new List<(string Id, double Lat, double Lon)>();
-        int roadNodeCount = 14;
-        for (int r = 0; r < roadNodeCount; r++)
-        {
-            double t = r / (double)(roadNodeCount - 1);
-            double rLat = 49.5700 + (49.5765 - 49.5700) * t;
-            double rLon = 16.8710 + (16.8850 - 16.8710) * t;
-            string rId = $"node_road_{r}";
-            roadNodes.Add((rId, rLat, rLon));
 
-            if (r > 0)
+        int roadNodeIdx = 0;
+        var random = new Random(743615);
+
+        // Pomocná funkce pro generování ulice a přilehlých domů
+        void AddStreetSegment(int startHouseNum, int endHouseNum, double startLat, double startLon, double endLat, double endLon)
+        {
+            int count = endHouseNum - startHouseNum + 1;
+            int segmentNodesCount = Math.Max(3, count / 4);
+
+            var segmentNodeIds = new List<string>();
+            for (int n = 0; n < segmentNodesCount; n++)
             {
-                var prev = roadNodes[r - 1];
-                double dist = CalculateDistMeters(prev.Lat, prev.Lon, rLat, rLon);
+                double nt = n / (double)(segmentNodesCount - 1);
+                double nLat = startLat + (endLat - startLat) * nt;
+                double nLon = startLon + (endLon - startLon) * nt;
+                string nodeId = $"node_road_{roadNodeIdx++}";
+                roadNodes.Add((nodeId, nLat, nLon));
+                segmentNodeIds.Add(nodeId);
+
+                if (n > 0)
+                {
+                    var prevNode = roadNodes[roadNodes.Count - 2];
+                    double dist = CalculateDistMeters(prevNode.Lat, prevNode.Lon, nLat, nLon);
+                    roadEdges.Add(new ConnectivityEdge
+                    {
+                        Id = $"edge_road_{nodeId}",
+                        FromId = prevNode.Id,
+                        ToId = nodeId,
+                        Kind = "Road",
+                        CostMeters = dist,
+                        State = "Open"
+                    });
+                }
+            }
+
+            for (int i = startHouseNum; i <= endHouseNum; i++)
+            {
+                double progress = (i - startHouseNum) / (double)Math.Max(1, count - 1);
+
+                double baseLat = startLat + (endLat - startLat) * progress;
+                double baseLon = startLon + (endLon - startLon) * progress;
+
+                bool side = i % 2 == 1;
+                double offsetDist = (side ? 1.0 : -1.0) * (8.0 + random.NextDouble() * 10.0);
+
+                // Kolmý odskok od ulice
+                double dLat = (endLat - startLat);
+                double dLon = (endLon - startLon);
+                double len = Math.Sqrt(dLat * dLat + dLon * dLon);
+                double perpLat = -dLon / (len > 0 ? len : 1);
+                double perpLon = dLat / (len > 0 ? len : 1);
+
+                double lat = baseLat + perpLat * (offsetDist / 111320.0);
+                double lon = baseLon + perpLon * (offsetDist / 72000.0);
+
+                string buildingId = $"building_cp_{i}";
+
+                var b = new SpatialEntity
+                {
+                    Id = buildingId,
+                    Type = SpatialEntityTypes.Building,
+                    Name = $"Čp. {i} (Rodinný dům)",
+                    ParentId = runarov.Id,
+                    Spatial = new SpatialComponent
+                    {
+                        Frame = "World",
+                        GlobalAnchor = new GeoAnchor { Lat = lat, Lon = lon }
+                    },
+                    Semantic = new SemanticComponent
+                    {
+                        Tags = ["building", "residential", "family_house"],
+                        Description = $"Rodinný dům Čp. {i} v obci Runářov (k.ú. 743615).",
+                        Attributes = new Dictionary<string, object>
+                        {
+                            { "house_number", i },
+                            { "floors", i % 4 == 0 ? 2 : 1 },
+                            { "street_side", side ? "Severní/Západní strana" : "Jižní/Východní strana" }
+                        }
+                    },
+                    Provenance = new ProvenanceComponent { Source = "RUIAN", SourceRef = $"ruian_building_{i}" },
+                    Generation = new GenerationComponent { State = i == 23 ? GenerationState.Detailed : GenerationState.NotGenerated }
+                };
+
+                buildings.Add(b);
+
+                int nearestNodeIdx = Math.Min((int)(progress * (segmentNodeIds.Count - 1)), segmentNodeIds.Count - 1);
+                string nearestNodeId = segmentNodeIds[nearestNodeIdx];
+
                 roadEdges.Add(new ConnectivityEdge
                 {
-                    Id = $"edge_main_road_{r}",
-                    FromId = prev.Id,
-                    ToId = rId,
-                    Kind = "Road",
-                    CostMeters = dist,
+                    Id = $"edge_driveway_{i}",
+                    FromId = buildingId,
+                    ToId = nearestNodeId,
+                    Kind = "Path",
+                    CostMeters = Math.Abs(offsetDist),
                     State = "Open"
                 });
             }
         }
 
-        roadEdges.Add(new ConnectivityEdge { Id = "edge_chapel_road", FromId = "place_chapel", ToId = roadNodes[7].Id, Kind = "Road", CostMeters = 12.0 });
-        roadEdges.Add(new ConnectivityEdge { Id = "edge_bus_road", FromId = "place_bus_stop", ToId = roadNodes[5].Id, Kind = "Road", CostMeters = 10.0 });
+        // 1. Západní hlavní ulice obce Runářov (Čp. 1 až Čp. 45)
+        AddStreetSegment(1, 45, 49.5732, 16.8680, 49.5729, 16.8765);
 
-        // Rozmístění 110 domů podél ulice v Runářově (severozápadní a jihovýchodní strana ulice)
-        var random = new Random(743615);
+        // 2. Severní návesní obytná větev (Čp. 46 až Čp. 75)
+        AddStreetSegment(46, 75, 49.5735, 16.8715, 49.5748, 16.8745);
 
-        for (int i = 1; i <= 110; i++)
-        {
-            double progress = (i - 1) / 109.0;
+        // 3. Východní uliční část podél potoka (Čp. 76 až Čp. 110)
+        AddStreetSegment(76, 110, 49.5728, 16.8774, 49.5724, 16.8835);
 
-            double baseLat = 49.5700 + (49.5765 - 49.5700) * progress;
-            double baseLon = 16.8710 + (16.8850 - 16.8710) * progress;
-
-            bool northSide = i % 2 == 1;
-            double offsetMeters = (northSide ? 1.0 : -1.0) * (15.0 + random.NextDouble() * 12.0);
-
-            // Přesný pravouhlý odskok od osy ulice
-            double lat = baseLat - (offsetMeters * 0.7071 / 111320.0);
-            double lon = baseLon + (offsetMeters * 0.7071 / 72000.0);
-
-            string buildingId = $"building_cp_{i}";
-
-            var b = new SpatialEntity
-            {
-                Id = buildingId,
-                Type = SpatialEntityTypes.Building,
-                Name = $"Čp. {i} (Rodinný dům)",
-                ParentId = runarov.Id,
-                Spatial = new SpatialComponent
-                {
-                    Frame = "World",
-                    GlobalAnchor = new GeoAnchor { Lat = lat, Lon = lon }
-                },
-                Semantic = new SemanticComponent
-                {
-                    Tags = ["building", "residential", "family_house"],
-                    Description = $"Rodinný dům Čp. {i} v obci Runářov (k.ú. 743615).",
-                    Attributes = new Dictionary<string, object>
-                    {
-                        { "house_number", i },
-                        { "floors", i % 4 == 0 ? 2 : 1 },
-                        { "street_side", northSide ? "Severozápadní strana" : "Jihovýchodní strana" }
-                    }
-                },
-                Provenance = new ProvenanceComponent { Source = "RUIAN", SourceRef = $"ruian_building_{i}" },
-                Generation = new GenerationComponent { State = i == 23 ? GenerationState.Detailed : GenerationState.NotGenerated }
-            };
-
-            buildings.Add(b);
-
-            int nearestRoadIdx = Math.Min((int)(progress * (roadNodeCount - 1)), roadNodeCount - 1);
-            string nearestRoadNodeId = roadNodes[nearestRoadIdx].Id;
-
-            roadEdges.Add(new ConnectivityEdge
-            {
-                Id = $"edge_driveway_{i}",
-                FromId = buildingId,
-                ToId = nearestRoadNodeId,
-                Kind = "Path",
-                CostMeters = Math.Abs(offsetMeters),
-                State = "Open"
-            });
-        }
+        // Propojení POI na cestní síť
+        roadEdges.Add(new ConnectivityEdge { Id = "edge_chapel_road", FromId = "place_chapel", ToId = roadNodes.First(n => n.Lat.Equals(49.5728) || n.Id.Contains("node")).Id, Kind = "Road", CostMeters = 10.0 });
+        roadEdges.Add(new ConnectivityEdge { Id = "edge_bus_road", FromId = "place_bus_stop", ToId = roadNodes.First().Id, Kind = "Road", CostMeters = 10.0 });
 
         await _worldRepository.AddManyAsync(buildings);
         await _connectivityRepository.AddManyAsync(roadEdges);

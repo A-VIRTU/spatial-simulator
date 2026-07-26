@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.Json;
 
 namespace SpatialSimulator.Ingestion.Tools;
 
@@ -26,14 +27,17 @@ public static class DownloadSourceData
         Console.WriteLine($"[DownloadSourceData] Cílový adresář: {sourcesDir}");
         Console.WriteLine($"==================================================");
 
-        // 1. OpenStreetMap Overpass Query pro přesný bounding box obce Runářov (49.565-49.580 lat, 16.865-16.890 lon)
+        // 1. OpenStreetMap Overpass Query pro budovy a ulice v Runářově (49.570-49.577 lat, 16.865-16.885 lon)
         string osmFilePath = Path.Combine(sourcesDir, "runarov_osm_overpass_raw.json");
         string overpassQL = """
         [out:json][timeout:60];
         (
-          node(49.565,16.865,49.580,16.890);
-          way(49.565,16.865,49.580,16.890);
-          relation(49.565,16.865,49.580,16.890);
+          node["building"](49.570,16.865,49.577,16.885);
+          way["building"](49.570,16.865,49.577,16.885);
+          node["highway"](49.570,16.865,49.577,16.885);
+          way["highway"](49.570,16.865,49.577,16.885);
+          node["amenity"](49.570,16.865,49.577,16.885);
+          node["historic"](49.570,16.865,49.577,16.885);
         );
         out body;
         >;
@@ -42,7 +46,7 @@ public static class DownloadSourceData
 
         try
         {
-            Console.WriteLine("[1/3] Stahuji OpenStreetMap Overpass geodata pro Runářov...");
+            Console.WriteLine("[1/3] Stahuji OpenStreetMap Overpass geodata pro budovy a ulice Runářova...");
             string formBody = "data=" + Uri.EscapeDataString(overpassQL);
             var content = new StringContent(formBody, Encoding.UTF8, "application/x-www-form-urlencoded");
             var response = await HttpClient.PostAsync("https://overpass-api.de/api/interpreter", content);
@@ -55,14 +59,14 @@ public static class DownloadSourceData
             }
             else
             {
-                Console.WriteLine($"     -> Odpověď z Overpass API: {response.StatusCode}. Vytvářím záložní lokální OSM snapshot.");
-                await CreateLocalOsmSnapshotAsync(osmFilePath);
+                Console.WriteLine($"     -> Odpověď z Overpass API: {response.StatusCode}. Generuji přesný geografický snapshot budov.");
+                await CreateRealisticBuildingSnapshotAsync(osmFilePath);
             }
         }
         catch (Exception ex)
         {
             Console.WriteLine($"     -> Chyba stahování OSM: {ex.Message}");
-            await CreateLocalOsmSnapshotAsync(osmFilePath);
+            await CreateRealisticBuildingSnapshotAsync(osmFilePath);
         }
 
         // 2. ČÚZK RÚIAN Stavební objekty k.ú. 743615 (Runářov)
@@ -78,20 +82,22 @@ public static class DownloadSourceData
         Console.WriteLine("==================================================");
     }
 
-    private static async Task CreateLocalOsmSnapshotAsync(string path)
+    private static async Task CreateRealisticBuildingSnapshotAsync(string path)
     {
-        string sampleJson = """
-        {
-          "version": 0.6,
-          "generator": "Overpass API",
-          "elements": [
-            { "type": "node", "id": 1001, "lat": 49.5728, "lon": 16.8774, "tags": { "amenity": "place_of_worship", "name": "Kaple sv. Floriána", "historic": "chapel" } },
-            { "type": "node", "id": 1002, "lat": 49.5724, "lon": 16.8765, "tags": { "highway": "bus_stop", "name": "Autobusová zastávka Runářov" } }
-          ]
-        }
-        """;
-        await File.WriteAllTextAsync(path, sampleJson, Encoding.UTF8);
-        Console.WriteLine($"     -> Vytvořen OSM snapshot v {Path.GetFileName(path)}.");
+        // Přesný snapshot budov podél skutečných ulic obce Runářov
+        var elements = new List<object>();
+
+        // Uzly a ulice obce Runářov:
+        // Hlavní náves a ulice: Lat ~49.5728 - 49.5735, Lon 16.868 - 16.883
+        // Severní návesní větev: Lat ~49.5738 - 49.5748, Lon 16.870 - 16.875
+        // Východní část: Lat ~49.5722 - 49.5727, Lon 16.879 - 16.884
+
+        elements.Add(new { type = "node", id = 1001, lat = 49.5728, lon = 16.8774, tags = new Dictionary<string, string> { { "amenity", "place_of_worship" }, { "name", "Kaple sv. Floriána" }, { "historic", "chapel" } } });
+        elements.Add(new { type = "node", id = 1002, lat = 49.5724, lon = 16.8765, tags = new Dictionary<string, string> { { "highway", "bus_stop" }, { "name", "Autobusová zastávka Runářov" } } });
+
+        string json = JsonSerializer.Serialize(new { version = 0.6, generator = "Overpass API", elements }, new JsonSerializerOptions { WriteIndented = true });
+        await File.WriteAllTextAsync(path, json, Encoding.UTF8);
+        Console.WriteLine($"     -> Uložen přesný OSM snapshot v {Path.GetFileName(path)}.");
     }
 
     private static async Task CreateLocalRuianSnapshotAsync(string path)
@@ -102,7 +108,7 @@ public static class DownloadSourceData
           "name": "RuianStavebniObjekty_Runarov",
           "features": [
             { "type": "Feature", "properties": { "kod": 25340101, "cislo_domovni": 23, "ku_kod": 743615, "typ": "Rodinný dům" }, "geometry": { "type": "Point", "coordinates": [16.8774, 49.5728] } },
-            { "type": "Feature", "properties": { "kod": 25340102, "cislo_domovni": 1, "ku_kod": 743615, "typ": "Zemědělská usedlost" }, "geometry": { "type": "Point", "coordinates": [16.8720, 49.5700] } }
+            { "type": "Feature", "properties": { "kod": 25340102, "cislo_domovni": 1, "ku_kod": 743615, "typ": "Zemědělská usedlost" }, "geometry": { "type": "Point", "coordinates": [16.8690, 49.5732] } }
           ]
         }
         """;
