@@ -29,8 +29,20 @@ public class SeedController : ControllerBase
     [HttpPost("runarov")]
     public async Task<IActionResult> SeedRunarov()
     {
-        var seeder = new RunarovSeeder(_worldRepository, _connectivityRepository);
-        await seeder.SeedAsync();
-        return Ok(new { message = "Runářov úspěšně naplněn." });
+        try
+        {
+            // Smaže staré sídlo
+            await _worldRepository.DeleteAsync("settlement_runarov");
+
+            string dataDir = Path.Combine(AppContext.BaseDirectory, "Data");
+            var seeder = new RealRunarovSeeder(_worldRepository, _connectivityRepository);
+            await seeder.SeedRealRunarovAsync(dataDir);
+
+            return Ok(new { message = "Runářov úspěšně pře-naplněn reálnými geodaty." });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = ex.Message });
+        }
     }
 }

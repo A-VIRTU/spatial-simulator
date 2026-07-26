@@ -42,9 +42,9 @@ function initTabs() {
     });
 }
 
-// Leaflet Map Initialization
+// Leaflet Map Initialization centered on real Runářov village (Lat: 49.5492, Lon: 16.9015)
 function initMap() {
-    map = L.map('map', { zoomControl: true }).setView([49.5427, 16.8963], 16);
+    map = L.map('map', { zoomControl: true }).setView([49.5492, 16.9015], 16);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
@@ -94,7 +94,6 @@ function renderTree(filterQuery = '') {
 function buildTreeNode(entity, filterQuery = '') {
     const children = entitiesStore.filter(e => e.parentId === entity.id);
 
-    // If filtering, check if name matches or any child matches
     if (filterQuery && !entity.name.toLowerCase().includes(filterQuery) && !children.some(c => c.name.toLowerCase().includes(filterQuery))) {
         return document.createTextNode('');
     }
@@ -237,27 +236,34 @@ function renderChildrenTable(parentId) {
     });
 }
 
-// Render Map Markers & Connectivity Edges
+// Render Map Markers & Road Graph Network
 function renderMapMarkers() {
     if (!map) return;
 
+    map.eachLayer(layer => {
+        if (layer instanceof L.Marker || layer instanceof L.CircleMarker || layer instanceof L.Polyline) {
+            map.removeLayer(layer);
+        }
+    });
+
+    // Render Buildings and POIs along real Runářov streets
     entitiesStore.forEach(entity => {
         if (entity.spatial?.globalAnchor) {
             const anchor = entity.spatial.globalAnchor;
             let color = '#38bdf8';
-            let radius = 7;
+            let radius = 6;
 
             if (entity.type === 'Building') color = '#38bdf8';
-            else if (entity.type === 'Place') { color = '#a855f7'; radius = 9; }
-            else if (entity.type === 'Agent') { color = '#f43f5e'; radius = 11; }
+            else if (entity.type === 'Place') { color = '#a855f7'; radius = 8; }
+            else if (entity.type === 'Agent') { color = '#f43f5e'; radius = 10; }
 
             const marker = L.circleMarker([anchor.lat, anchor.lon], {
                 radius: radius,
                 fillColor: color,
                 color: '#ffffff',
-                weight: 2,
+                weight: 1.5,
                 opacity: 1,
-                fillOpacity: 0.9
+                fillOpacity: 0.85
             }).addTo(map);
 
             marker.bindTooltip(`<b>${entity.name}</b><br/>Typ: ${entity.type}`);
@@ -265,6 +271,7 @@ function renderMapMarkers() {
         }
     });
 
+    // Render Road Network (main road and driveway connections)
     edgesStore.forEach(edge => {
         const fromE = entitiesStore.find(e => e.id === edge.fromId);
         const toE = entitiesStore.find(e => e.id === edge.toId);
@@ -273,9 +280,9 @@ function renderMapMarkers() {
             const p2 = [toE.spatial.globalAnchor.lat, toE.spatial.globalAnchor.lon];
 
             L.polyline([p1, p2], {
-                color: '#38bdf8',
-                weight: 3,
-                opacity: 0.6
+                color: edge.kind === 'Road' ? '#38bdf8' : '#64748b',
+                weight: edge.kind === 'Road' ? 3 : 1.5,
+                opacity: 0.7
             }).addTo(map);
         }
     });
