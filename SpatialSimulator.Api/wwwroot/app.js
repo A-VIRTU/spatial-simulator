@@ -4,6 +4,7 @@ let edgesStore = [];
 let eventsStore = [];
 let selectedEntityId = 'settlement_runarov';
 let currentPanelId = 'panel-tree';
+let isSyncingHash = false;
 
 document.addEventListener('DOMContentLoaded', async () => {
     initTabs();
@@ -11,9 +12,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     initSignalR();
 
     await loadData();
-    restoreFromUrlHash();
 
-    window.addEventListener('hashchange', restoreFromUrlHash);
+    window.addEventListener('hashchange', () => {
+        if (!isSyncingHash) {
+            restoreFromUrlHash();
+        }
+    });
 
     document.getElementById('btn-reload').addEventListener('click', loadData);
     document.getElementById('btn-step-agent').addEventListener('click', executeAgentStep);
@@ -24,11 +28,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('tree-search').addEventListener('input', (e) => filterTree(e.target.value));
 });
 
-// URL Hash Routing System
+// URL Hash Routing System (Persists current view & selected entity in address bar hash)
 function updateUrlHash() {
-    const newHash = `#panel=${currentPanelId}&entity=${selectedEntityId}`;
-    if (window.location.hash !== newHash) {
-        history.replaceState(null, '', newHash);
+    if (isSyncingHash) return;
+    const targetHash = `#panel=${currentPanelId}&entity=${selectedEntityId}`;
+    if (window.location.hash !== targetHash) {
+        isSyncingHash = true;
+        location.hash = targetHash;
+        setTimeout(() => { isSyncingHash = false; }, 50);
     }
 }
 
@@ -40,12 +47,16 @@ function restoreFromUrlHash() {
     const panel = params.get('panel');
     const entity = params.get('entity');
 
+    isSyncingHash = true;
+
     if (panel) {
         switchTab(panel, false);
     }
     if (entity && entitiesStore.some(e => e.id === entity)) {
         selectEntity(entity, false);
     }
+
+    isSyncingHash = false;
 }
 
 function switchTab(panelId, updateHash = true) {
@@ -139,8 +150,12 @@ async function loadData() {
         renderTree();
         renderMapMarkers();
         renderTimeline();
-        selectEntity(selectedEntityId, false);
-        restoreFromUrlHash();
+
+        if (window.location.hash) {
+            restoreFromUrlHash();
+        } else {
+            selectEntity(selectedEntityId, true);
+        }
     } catch (err) {
         console.error("Error loading data:", err);
     }
