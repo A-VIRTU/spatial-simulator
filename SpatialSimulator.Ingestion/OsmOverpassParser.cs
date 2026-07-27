@@ -93,12 +93,21 @@ public class OsmOverpassParser
                     }
                 }
 
-                // Středové souřadnice
+                // Středové souřadnice (Pro lineární útvary jako silnice, cesty a potoky spočítáme přesný střed délky podél křivky)
                 double centerLat = 0;
                 double centerLon = 0;
                 bool hasCoords = false;
 
-                if (elem.TryGetProperty("center", out var centerObj))
+                bool isLinear = tags.ContainsKey("highway") || tags.ContainsKey("waterway");
+
+                if (isLinear && polylineCoords.Count > 0)
+                {
+                    var mid = CalculatePolylineMidpoint(polylineCoords);
+                    centerLat = mid.Lat;
+                    centerLon = mid.Lon;
+                    hasCoords = true;
+                }
+                else if (elem.TryGetProperty("center", out var centerObj))
                 {
                     centerLat = centerObj.GetProperty("lat").GetDouble();
                     centerLon = centerObj.GetProperty("lon").GetDouble();
@@ -112,8 +121,9 @@ public class OsmOverpassParser
                 }
                 else if (polylineCoords.Count > 0)
                 {
-                    centerLat = polylineCoords.Average(g => g[1]);
-                    centerLon = polylineCoords.Average(g => g[0]);
+                    var mid = CalculatePolylineMidpoint(polylineCoords);
+                    centerLat = mid.Lat;
+                    centerLon = mid.Lon;
                     hasCoords = true;
                 }
 
@@ -514,5 +524,54 @@ public class OsmOverpassParser
         double dLat = (lat2 - lat1) * 111320.0;
         double dLon = (lon2 - lon1) * 72000.0;
         return Math.Sqrt(dLat * dLat + dLon * dLon);
+    }
+
+    /// <summary>
+    /// Vypočítá přesné GPS souřadnice středu délky podél fyzické křivky/lomené čáry (midpoint along curve length).
+    /// </summary>
+    private static (double Lat, double Lon) CalculatePolylineMidpoint(List<List<double>> polylineCoords)
+    {
+        if (polylineCoords.Count == 0) return (0, 0);
+        if (polylineCoords.Count == 1) return (polylineCoords[0][1], polylineCoords[0][0]);
+
+        List<double> segLengths = new();
+        double totalLength = 0;
+
+        for (int i = 0; i < polylineCoords.Count - 1; i++)
+        {
+            var p1 = polylineCoords[i];
+            var p2 = polylineCoords[i + 1];
+            double dist = CalculateDistMeters(p1[1], p1[0], p2[1], p2[0]);
+            segLengths.Add(dist);
+            totalLength += dist;
+        }
+
+        if (totalLength <= 0)
+            return (polylineCoords[0][1], polylineCoords[0][0]);
+
+        double targetHalfLength = totalLength / 2.0;
+        double accumulatedLength = 0;
+
+        for (int i = 0; i < segLengths.Count; i++)
+        {
+            double segLen = segLengths[i];
+            if (accumulatedLength + segLen >= targetHalfLength)
+            {
+                double remaining = targetHalfLength - accumulatedLength;
+                double fraction = segLen > 0 ? remaining / segLen : 0;
+
+                var p1 = polylineCoords[i];
+                var p2 = polylineCoords[i + 1];
+
+                double lon = p1[0] + (p2[0] - p1[0]) * fraction;
+                double lat = p1[1] + (p2[1] - p1[1]) * fraction;
+
+                return (lat, lon);
+            }
+            accumulatedLength += segLen;
+        }
+
+        var last = polylineCoords[^1];
+        return (last[1], last[0]);
     }
 }

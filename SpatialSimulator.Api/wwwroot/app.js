@@ -3,6 +3,7 @@ let entitiesStore = [];
 let edgesStore = [];
 let eventsStore = [];
 let selectedEntityId = 'settlement_runarov';
+let currentPanelId = 'panel-tree';
 
 document.addEventListener('DOMContentLoaded', async () => {
     initTabs();
@@ -10,6 +11,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     initSignalR();
 
     await loadData();
+    restoreFromUrlHash();
+
+    window.addEventListener('hashchange', restoreFromUrlHash);
 
     document.getElementById('btn-reload').addEventListener('click', loadData);
     document.getElementById('btn-step-agent').addEventListener('click', executeAgentStep);
@@ -20,24 +24,62 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('tree-search').addEventListener('input', (e) => filterTree(e.target.value));
 });
 
+// URL Hash Routing System
+function updateUrlHash() {
+    const newHash = `#panel=${currentPanelId}&entity=${selectedEntityId}`;
+    if (window.location.hash !== newHash) {
+        history.replaceState(null, '', newHash);
+    }
+}
+
+function restoreFromUrlHash() {
+    const hash = window.location.hash.replace(/^#/, '');
+    if (!hash) return;
+
+    const params = new URLSearchParams(hash);
+    const panel = params.get('panel');
+    const entity = params.get('entity');
+
+    if (panel) {
+        switchTab(panel, false);
+    }
+    if (entity && entitiesStore.some(e => e.id === entity)) {
+        selectEntity(entity, false);
+    }
+}
+
+function switchTab(panelId, updateHash = true) {
+    const tabs = document.querySelectorAll('.tab-item');
+    const targetTab = Array.from(tabs).find(t => t.dataset.panel === panelId);
+    if (!targetTab) return;
+
+    tabs.forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
+
+    targetTab.classList.add('active');
+    const targetPanel = document.getElementById(panelId);
+    if (targetPanel) targetPanel.classList.add('active');
+
+    currentPanelId = panelId;
+
+    if (panelId === 'panel-map' && map) {
+        setTimeout(() => map.invalidateSize(), 150);
+    } else if (panelId === 'panel-floorplan') {
+        renderFloorPlan();
+    }
+
+    if (updateHash) {
+        updateUrlHash();
+    }
+}
+
 // Admin Sub-tabs switcher
 function initTabs() {
     const tabs = document.querySelectorAll('.tab-item');
     tabs.forEach(tab => {
         tab.addEventListener('click', () => {
-            tabs.forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
-
-            tab.classList.add('active');
             const panelId = tab.dataset.panel;
-            const targetPanel = document.getElementById(panelId);
-            if (targetPanel) targetPanel.classList.add('active');
-
-            if (panelId === 'panel-map' && map) {
-                setTimeout(() => map.invalidateSize(), 150);
-            } else if (panelId === 'panel-floorplan') {
-                renderFloorPlan();
-            }
+            switchTab(panelId, true);
         });
     });
 }
@@ -97,7 +139,8 @@ async function loadData() {
         renderTree();
         renderMapMarkers();
         renderTimeline();
-        selectEntity(selectedEntityId);
+        selectEntity(selectedEntityId, false);
+        restoreFromUrlHash();
     } catch (err) {
         console.error("Error loading data:", err);
     }
@@ -148,7 +191,7 @@ function buildTreeNode(entity, filterQuery = '') {
     itemEl.innerHTML = `<span class="type-badge">${icon} ${entity.type}</span> <span>${entity.name}</span>`;
     itemEl.onclick = (e) => {
         e.stopPropagation();
-        selectEntity(entity.id);
+        selectEntity(entity.id, true);
     };
 
     nodeEl.appendChild(itemEl);
@@ -171,7 +214,7 @@ function filterTree(query) {
 }
 
 // Select Entity & Fill Main View
-function selectEntity(id) {
+function selectEntity(id, updateHash = true) {
     selectedEntityId = id;
     const entity = entitiesStore.find(e => e.id === id);
     if (!entity) return;
@@ -225,6 +268,10 @@ function selectEntity(id) {
 
     // Highlight selected item in tree
     document.querySelectorAll('.tree-item').forEach(el => el.classList.remove('selected'));
+
+    if (updateHash) {
+        updateUrlHash();
+    }
 }
 
 // Render Breadcrumb Bar
@@ -244,7 +291,7 @@ function renderBreadcrumbs(entity) {
         const span = document.createElement('span');
         span.className = 'breadcrumb-item';
         span.textContent = item.name;
-        span.onclick = () => selectEntity(item.id);
+        span.onclick = () => selectEntity(item.id, true);
         container.appendChild(span);
 
         if (idx < chain.length - 1) {
@@ -279,7 +326,7 @@ function renderChildrenTable(parentId) {
             <td><span class="type-badge">${child.type}</span></td>
             <td style="font-family:var(--font-mono); font-size:0.75rem;">${child.id}</td>
             <td>${child.generation?.state || 'Verified'}</td>
-            <td><button class="btn btn-secondary btn-sm" onclick="selectEntity('${child.id}')">🔍 Detail</button></td>
+            <td><button class="btn btn-secondary btn-sm" onclick="selectEntity('${child.id}', true)">🔍 Detail</button></td>
         `;
         tbody.appendChild(tr);
     });
@@ -382,7 +429,7 @@ function renderMapMarkers() {
 
             const icon = getEntityIcon(entity.type);
             marker.bindTooltip(`<b>${icon} ${entity.name}</b><br/>Typ: ${entity.type}`);
-            marker.on('click', () => selectEntity(entity.id));
+            marker.on('click', () => selectEntity(entity.id, true));
         }
     });
 }
