@@ -261,13 +261,15 @@ public class OsmOverpassParser
 
                         bool isBridge = tags.ContainsKey("bridge") && tags["bridge"] != "no";
                         bool isFord = tags.ContainsKey("ford") && tags["ford"] != "no";
+                        string[] pathTypes = ["track", "path", "footway", "bridleway", "steps", "pedestrian"];
+                        bool isPath = pathTypes.Contains(highwayType);
 
                         result.Edges.Add(new ConnectivityEdge
                         {
                             Id = $"edge_road_{id}_{i}",
                             FromId = n1Id,
                             ToId = n2Id,
-                            Kind = isBridge ? "Bridge" : (isFord ? "Ford" : "Road"),
+                            Kind = isBridge ? "Bridge" : (isFord ? "Ford" : (isPath ? "Path" : "Road")),
                             CostMeters = dist,
                             Bidirectional = true,
                             State = "Open"

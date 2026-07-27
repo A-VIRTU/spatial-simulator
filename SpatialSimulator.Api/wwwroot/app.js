@@ -44,12 +44,36 @@ function initTabs() {
 
 // Leaflet Map Initialization centered on real Runářov village (Lat: 49.5728, Lon: 16.8774)
 function initMap() {
-    map = L.map('map', { zoomControl: true }).setView([49.5728, 16.8774], 16);
-
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    const osmStandard = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
         attribution: '© OpenStreetMap contributors'
-    }).addTo(map);
+    });
+
+    const esriSatellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+        maxZoom: 19,
+        attribution: 'Tiles © Esri'
+    });
+
+    const openTopo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+        maxZoom: 17,
+        attribution: 'Map data: © OpenStreetMap, SRTM | Map style: © OpenTopoMap'
+    });
+
+    const noBasemap = L.layerGroup(); // Prázdná vrstva (zcela bez mapového podkladu)
+
+    map = L.map('map', {
+        zoomControl: true,
+        layers: [osmStandard]
+    }).setView([49.5728, 16.8774], 16);
+
+    const baseMaps = {
+        "🗺️ Standardní mapa (OSM)": osmStandard,
+        "🛰️ Satelitní snímky (Esri)": esriSatellite,
+        "⛰️ Turistická mapa (Topo)": openTopo,
+        "⬛ Bez podkladu (Prázdné plátno)": noBasemap
+    };
+
+    L.control.layers(baseMaps, null, { position: 'topright' }).addTo(map);
 }
 
 // Load Data from API
@@ -271,7 +295,7 @@ function renderMapMarkers() {
         }
     });
 
-    // 1. Render Roads & Waterway Edges
+    // 1. Render Roads, Footpaths & Waterway Edges
     edgesStore.forEach(edge => {
         const fromE = entitiesStore.find(e => e.id === edge.fromId);
         const toE = entitiesStore.find(e => e.id === edge.toId);
@@ -288,12 +312,36 @@ function renderMapMarkers() {
                     lineCap: 'round'
                 }).addTo(map);
                 line.bindTooltip('<b>💧 Runářovský potok / Vodní tok</b>');
-            } else if (edge.kind === 'Road' || edge.kind === 'Bridge' || edge.kind === 'Ford') {
-                L.polyline([p1, p2], {
-                    color: edge.kind === 'Bridge' ? '#e11d48' : '#f59e0b', // Amber for roads, rose for bridges
-                    weight: 3,
-                    opacity: 0.8
+            } else if (edge.kind === 'Path') {
+                const line = L.polyline([p1, p2], {
+                    color: '#d97706', // Dashed brown/amber for field paths, tracks, footways
+                    weight: 2.5,
+                    dashArray: '6, 6',
+                    opacity: 0.9
                 }).addTo(map);
+                line.bindTooltip('<b>👣 Polní cesta / Pěšina</b>');
+            } else if (edge.kind === 'Road') {
+                const line = L.polyline([p1, p2], {
+                    color: '#f59e0b', // Solid amber/gold for paved streets
+                    weight: 3.5,
+                    opacity: 0.85
+                }).addTo(map);
+                line.bindTooltip('<b>🛣️ Ulice / Silnice</b>');
+            } else if (edge.kind === 'Bridge') {
+                const line = L.polyline([p1, p2], {
+                    color: '#e11d48', // Rose for bridges
+                    weight: 4,
+                    opacity: 0.9
+                }).addTo(map);
+                line.bindTooltip('<b>🌉 Most</b>');
+            } else if (edge.kind === 'Ford') {
+                const line = L.polyline([p1, p2], {
+                    color: '#06b6d4', // Cyan dashed for fords
+                    weight: 3.5,
+                    dashArray: '4, 4',
+                    opacity: 0.9
+                }).addTo(map);
+                line.bindTooltip('<b>🌊 Brod</b>');
             } else {
                 L.polyline([p1, p2], {
                     color: '#64748b',

@@ -3,15 +3,15 @@ using System.Text;
 namespace SpatialSimulator.Ingestion.Tools;
 
 /// <summary>
-/// Samostatný skript pro stahování SKUTEČNÝCH budov, silnic, cest, pěšin a potoků obce Runářov z OpenStreetMap Overpass API (`out body geom`).
-/// Motivace: Stáhne přesné středové souřadnice i lomové body (geometry) všech budov, uliční sítě (highway=*) a vodních toků (waterway=*, Runářovský potok).
+/// Samostatný skript pro stahování SKUTEČNÝCH budov, silnic, polních cest, pěšin a potoků obce Runářov z OpenStreetMap Overpass API (`out body geom`).
+/// Motivace: Stáhne přesné středové souřadnice i lomové body (geometry) všech budov, cestní sítě včetně polních cest a pěšin (highway=*) a vodních toků (waterway=*).
 /// </summary>
 public static class DownloadSourceData
 {
     private static readonly HttpClient HttpClient = new() { Timeout = TimeSpan.FromSeconds(60) };
 
     /// <summary>
-    /// Stáhne kompletní surová geodata (budovy, silnice, cesty, potoky) a uloží je do `Data/sources/runarov_osm_overpass_raw.json`.
+    /// Stáhne kompletní surová geodata (budovy, silnice, polní cesty, pěšiny, potoky) a uloží je do `Data/sources/runarov_osm_overpass_raw.json`.
     /// </summary>
     public static async Task Main(string[] args)
     {
@@ -21,22 +21,22 @@ public static class DownloadSourceData
         sourcesDir = Path.GetFullPath(sourcesDir);
 
         Console.WriteLine($"==================================================");
-        Console.WriteLine($"[DownloadSourceData] Stahuji GEODATA (Budovy, Silnice, Cesty, Pěšiny, Potoky) pro Runářov");
+        Console.WriteLine($"[DownloadSourceData] Stahuji GEODATA (Budovy, Silnice, Polní cesty, Pěšiny, Potoky) pro Runářov");
         Console.WriteLine($"==================================================");
 
         string osmFilePath = Path.Combine(sourcesDir, "runarov_osm_overpass_raw.json");
 
-        // Overpass QL dotaz s `out body geom;` pro budovy, silnice, cesty, pěšiny a vodní toky (Runářovský potok)
+        // Overpass QL dotaz s rozšířeným bbox (49.5630,16.8550,49.5830,16.9050) pro pokrytí polních cest a pěšin okolo celého Runářova
         string overpassQL = """
         [out:json][timeout:60];
         (
-          way["building"](49.5680,16.8600,49.5780,16.8900);
-          node["building"](49.5680,16.8600,49.5780,16.8900);
-          way["highway"](49.5680,16.8600,49.5780,16.8900);
-          way["waterway"](49.5680,16.8600,49.5780,16.8900);
-          way["natural"="water"](49.5680,16.8600,49.5780,16.8900);
-          node["amenity"](49.5680,16.8600,49.5780,16.8900);
-          node["historic"](49.5680,16.8600,49.5780,16.8900);
+          way["building"](49.5630,16.8550,49.5830,16.9050);
+          node["building"](49.5630,16.8550,49.5830,16.9050);
+          way["highway"](49.5630,16.8550,49.5830,16.9050);
+          way["waterway"](49.5630,16.8550,49.5830,16.9050);
+          way["natural"="water"](49.5630,16.8550,49.5830,16.9050);
+          node["amenity"](49.5630,16.8550,49.5830,16.9050);
+          node["historic"](49.5630,16.8550,49.5830,16.9050);
         );
         out body geom;
         """;
@@ -45,7 +45,7 @@ public static class DownloadSourceData
 
         try
         {
-            Console.WriteLine("[1/1] Odesílám GET dotaz na Overpass API pro Budovy, Cesty a Potoky...");
+            Console.WriteLine("[1/1] Odesílám GET dotaz na Overpass API pro Budovy, Polní cesty, Pěšiny a Potoky...");
             var request = new HttpRequestMessage(HttpMethod.Get, url);
             request.Headers.Add("User-Agent", "SpatialSimulator/1.0 (contact@a-virtu.org)");
 

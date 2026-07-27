@@ -68,30 +68,10 @@ public class RealRunarovSeeder
         {
             await _worldRepository.AddManyAsync(osmData.Entities);
 
-            // Vytvoření uliční sítě propojující reálné budovy
-            var roadEdges = new List<ConnectivityEdge>();
-            for (int i = 0; i < osmData.Entities.Count - 1; i++)
+            if (osmData.Edges.Count > 0)
             {
-                var e1 = osmData.Entities[i];
-                var e2 = osmData.Entities[i + 1];
-                if (e1.Spatial?.GlobalAnchor != null && e2.Spatial?.GlobalAnchor != null)
-                {
-                    double dist = CalculateDistMeters(e1.Spatial.GlobalAnchor.Lat, e1.Spatial.GlobalAnchor.Lon, e2.Spatial.GlobalAnchor.Lat, e2.Spatial.GlobalAnchor.Lon);
-                    if (dist < 80.0)
-                    {
-                        roadEdges.Add(new ConnectivityEdge
-                        {
-                            Id = $"edge_osm_{i}_{i+1}",
-                            FromId = e1.Id,
-                            ToId = e2.Id,
-                            Kind = "Path",
-                            CostMeters = dist,
-                            State = "Open"
-                        });
-                    }
-                }
+                await _connectivityRepository.AddManyAsync(osmData.Edges);
             }
-            await _connectivityRepository.AddManyAsync(roadEdges);
         }
         else
         {
