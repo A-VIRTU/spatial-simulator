@@ -1,73 +1,56 @@
 namespace SpatialSimulator.Domain;
 
 /// <summary>
-/// Definice konstantních řetězců pro typy prostorových entit.
-/// Slouží pro jednotné označování uzlů v hierarchickém stromu obsahování (containment tree).
+/// Konstanty definující standardní typy sémanticko-prostorových entit v systému podle technické specifikace.
+/// Motivace: Poskytuje sjednocenou množinu řetězcových typů uzlů pro containment strom.
 /// </summary>
 public static class SpatialEntityTypes
 {
-    /// <summary>
-    /// Sídlo / Obec (např. Runářov, Konice, Moravská Třebová).
-    /// </summary>
+    /// <summary>Sídlo / obec / městys (např. Runářov, Konice).</summary>
     public const string Settlement = "Settlement";
 
-    /// <summary>
-    /// Mezivrstva pro část obce, náves, čtvrť nebo ulici.
-    /// </summary>
+    /// <summary>Oblast / čtvrť / část obce / náves.</summary>
     public const string Area = "Area";
 
-    /// <summary>
-    /// Pozemek zavedený z katastru nemovitostí (RÚIAN).
-    /// </summary>
+    /// <summary>Katastrální parcela (pozemecký uzel z katastru).</summary>
     public const string Parcel = "Parcel";
 
-    /// <summary>
-    /// Stavební objekt / Budova spojená se zemí.
-    /// </summary>
+    /// <summary>Venkovní dvůr nebo zahrada přiléhající k budově/parcele (nezastavěná plocha parcel).</summary>
+    public const string Yard = "Yard";
+
+    /// <summary>Stavební objekt / budova.</summary>
     public const string Building = "Building";
 
-    /// <summary>
-    /// Podlaží / Patro uvnitř budovy.
-    /// </summary>
+    /// <summary>Podlaží / patro budovy (1. NP, 2. NP...)</summary>
     public const string Floor = "Floor";
 
-    /// <summary>
-    /// Místnost na daném podlaží (kuchyň, chodba, obývák, ložnice).
-    /// </summary>
+    /// <summary>Místnost uvnitř podlaží.</summary>
     public const string Room = "Room";
 
-    /// <summary>
-    /// Nábytek neposuvný nebo pomalu měnitelný (stůl, skříň, kamna).
-    /// </summary>
+    /// <summary>Zájmové venkovní místo (kaple, zastávka, křižovatka, studna).</summary>
+    public const string Place = "Place";
+
+    /// <summary>Celkový liniový prvek (např. Runářovský potok, hlavní cesta, souvislý plot).</summary>
+    public const string LinearFeature = "LinearFeature";
+
+    /// <summary>Úsek liniového prvku se sekvenčním OrderIndex (např. 80m úsek potoka).</summary>
+    public const string LinearSegment = "LinearSegment";
+
+    /// <summary>Plošný pokryv území mimo zástavbu (les, pole, louka, rybník, sad).</summary>
+    public const string LandCover = "LandCover";
+
+    /// <summary>Kus nábytku nebo venkovní přístřešek (altán, kůlna, kamna, věšák).</summary>
     public const string Furniture = "Furniture";
 
-    /// <summary>
-    /// Pevné vybavení interiéru (dřez, umyvadlo, radiátor).
-    /// </summary>
-    public const string Fixture = "Fixture";
-
-    /// <summary>
-    /// Kontejnery obsahující další věci (kapsa, taška, zásuvka, krabice).
-    /// </summary>
-    public const string Container = "Container";
-
-    /// <summary>
-    /// Jednotlivé přenosné předměty (sirky, klíč, dokument).
-    /// </summary>
-    public const string Item = "Item";
-
-    /// <summary>
-    /// AI agent operující v simulovaném prostředí.
-    /// </summary>
-    public const string Agent = "Agent";
-
-    /// <summary>
-    /// Oblečení nošené agentem (funguje i jako kontejner pro kapsy).
-    /// </summary>
+    /// <summary>Oblečení nošené agentem (zimní kabát, bunda).</summary>
     public const string Clothing = "Clothing";
 
-    /// <summary>
-    /// Venkovní zájmový bod nebo křižovatka bez budovy (kaplička, studna, zastávka).
-    /// </summary>
-    public const string Place = "Place";
+    /// <summary>Úložný kontejner (kapsa, zásuvka, taška, krabice).</summary>
+    public const string Container = "Container";
+
+    /// <summary>Fyzický předmět (sirky, klíče, peněženka).</summary>
+    public const string Item = "Item";
+
+    /// <summary>AI agent / obyvatel lokality.</summary>
+    public const string Agent = "Agent";
 }

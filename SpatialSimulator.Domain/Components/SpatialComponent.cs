@@ -1,87 +1,120 @@
 namespace SpatialSimulator.Domain.Components;
 
 /// <summary>
-/// Prostorová komponenta entity určující její geografické nebo lokální souřadnicové vymezení.
-/// Motivace: Odděluje fyzickou geometrii od sémantických atributů a umožňuje kombinovat reálné GPS ukotvení budov s relativními bounding boxy místností.
+/// Druh geometrického vymezení objektu v prostoru.
+/// </summary>
+public enum GeometryKind
+{
+    /// <summary>Bez geometrie (drobné předměty, obsah kapes).</summary>
+    None,
+
+    /// <summary>Bodové ukotvení (střed budovy, POI).</summary>
+    Point,
+
+    /// <summary>Lokální 3D kvádr (místnost, nábytek).</summary>
+    Box,
+
+    /// <summary>Liniová geometrie (potok, cesta, plot).</summary>
+    Polyline,
+
+    /// <summary>Plošný polygon (půdorys budovy, parcela, rybník, les).</summary>
+    Polygon
+}
+
+/// <summary>
+/// Komponenta reprezentující prostorovou geometrii a souřadnicový rámec entit.
+/// Motivace: Podporuje světové GPS ukotvení (WGS84), lokální souřadnice vůči rodiči i liniové prvky (potoky).
 /// </summary>
 public class SpatialComponent
 {
-    /// <summary>
-    /// Souřadnicový rámec entity. Nabývá hodnot "World" (globální GPS) nebo "Local" (lokální v metrech vůči rodiči).
-    /// </summary>
+    /// <summary>Souřadnicový rámec ("World" nebo "Local").</summary>
     public string Frame { get; set; } = "World";
 
-    /// <summary>
-    /// Globální geografické ukotvení ve WGS84 (lat/lon). Vyplňuje se pouze u uzlů ukotvených v reálném světě (budova, pozemek, venkovní místo).
-    /// </summary>
+    /// <summary>Druh geometrie uzlu.</summary>
+    public GeometryKind Kind { get; set; } = GeometryKind.Box;
+
+    /// <summary>Světové ukotvení (GPS lon/lat, výška, půdorysný polygon).</summary>
     public GeoAnchor? GlobalAnchor { get; set; }
 
-    /// <summary>
-    /// Lokální 3D bounding box v metrech vůči rodičovskému uzlu. Používá se pro patra, místnosti a nábytek.
-    /// </summary>
+    /// <summary>Lokální 3D bounding box v metrech vůči rodiči.</summary>
     public BoundingBox3D? LocalBoundingBox { get; set; }
+
+    /// <summary>Světová lomená čára s šířkou v metrech pro liniové prvky (potok, ulica, plot).</summary>
+    public WorldPolyline? GlobalPolyline { get; set; }
 }
 
 /// <summary>
-/// Geografické ukotvení entity v reálném světě.
-/// Motivace: Umožňuje přesné zobrazení v mapových podkladech a prostorový index 2dsphere v databázi.
+/// Geografické ukotvení ve světových souřadnicích (WGS84).
 /// </summary>
 public class GeoAnchor
 {
-    /// <summary>
-    /// Zeměpisná délka (Longitude) ve WGS84 (EPSG:4326).
-    /// </summary>
+    /// <summary>Zeměpisná délka (Longitude WGS84).</summary>
     public double Lon { get; set; }
 
-    /// <summary>
-    /// Zeměpisná šířka (Latitude) ve WGS84 (EPSG:4326).
-    /// </summary>
+    /// <summary>Zeměpisná šířka (Latitude WGS84).</summary>
     public double Lat { get; set; }
 
-    /// <summary>
-    /// Nadmořská výška v metrech (nepovinná).
-    /// </summary>
+    /// <summary>Nadmorská výška v metrech.</summary>
     public double? ElevationM { get; set; }
+
+    /// <summary>Půdorysný polygon pro 2dsphere indexaci.</summary>
+    public List<List<double>>? FootprintCoordinates { get; set; }
 }
 
 /// <summary>
-/// Lokální trojrozměrný bounding box v metrech.
-/// Motivace: Poskytuje přibližný rozměr a orientaci objektu uvnitř rodičovského kontejneru bez nutnosti složité 3D síťové geometrie.
+/// Liniová geometrie ve světových souřadnicích (pro potoky, cesty, ploty).
+/// </summary>
+public class WorldPolyline
+{
+    /// <summary>Seznam dvojic [Lon, Lat] tvořících lomenou čáru.</summary>
+    public List<List<double>> Coordinates { get; set; } = [];
+
+    /// <summary>Přibližná šířka liniového prvku v metrech (koryto potoka, cesta).</summary>
+    public double? WidthM { get; set; }
+}
+
+/// <summary>
+/// Lokální 3D kvádr pro objekty uvnitř rodičovského kontejneru.
 /// </summary>
 public class BoundingBox3D
 {
-    /// <summary>
-    /// X pozice počátku vůči rodiči v metrech.
-    /// </summary>
+    /// <summary>Pozice X v metrech vůči rodiči.</summary>
     public double X { get; set; }
 
-    /// <summary>
-    /// Y pozice počátku vůči rodiči v metrech.
-    /// </summary>
+    /// <summary>Pozice Y v metrech vůči rodiči.</summary>
     public double Y { get; set; }
 
-    /// <summary>
-    /// Z pozice počátku vůči rodiči v metrech.
-    /// </summary>
+    /// <summary>Pozice Z v metrech vůči rodiči.</summary>
     public double Z { get; set; }
 
-    /// <summary>
-    /// Šířka objektu v metrech (Width).
-    /// </summary>
+    /// <summary>Šířka v metrech.</summary>
     public double W { get; set; }
 
-    /// <summary>
-    /// Výška objektu v metrech (Height).
-    /// </summary>
+    /// <summary>Výška v metrech.</summary>
     public double H { get; set; }
 
-    /// <summary>
-    /// Hloubka objektu v metrech (Depth).
-    /// </summary>
+    /// <summary>Hloubka v metrech.</summary>
     public double D { get; set; }
 
-    /// <summary>
-    /// Úhel natočení ve stupních vůči osám rodiče.
-    /// </summary>
+    /// <summary>Natočení ve stupních.</summary>
     public double RotationDeg { get; set; }
+}
+
+/// <summary>
+/// Nehierarchický prostorový vztah mezi entitami (třetí struktura vedle stromu a grafu).
+/// Motivace: Reprezentuje m:n fyzické dotyky/překryvy (např. úsek potoka hraničí s parcelou X).
+/// </summary>
+public class SpatialRelation
+{
+    /// <summary>Druh vztahu ("OverlapsWith" | "AdjacentTo" | "BorderedBy" | "CrossesUnder" | "PartOfNetwork").</summary>
+    public string Kind { get; set; } = "BorderedBy";
+
+    /// <summary>Identifikátor cílové entity.</summary>
+    public string TargetId { get; set; } = string.Empty;
+
+    /// <summary>Podíl plochy nebo délky v rozsahu 0..1 (pokud je relevantní).</summary>
+    public double? OverlapFraction { get; set; }
+
+    /// <summary>Textová poznámka (např. "levý břeh").</summary>
+    public string? Note { get; set; }
 }

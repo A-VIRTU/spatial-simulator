@@ -276,16 +276,16 @@ public class SpatialSimulatorTests
             ""elements"": [
                 { ""type"": ""node"", ""id"": 991, ""lat"": 49.543, ""lon"": 16.896, ""tags"": { ""amenity"": ""chapel"", ""name"": ""Kaplička"" } },
                 { ""type"": ""node"", ""id"": 992, ""lat"": 49.544, ""lon"": 16.897 },
-                { ""type"": ""way"", ""id"": 881, ""nodes"": [991, 992], ""tags"": { ""highway"": ""residential"" } }
+                { ""type"": ""way"", ""id"": 881, ""nodes"": [991, 992], ""tags"": { ""highway"": ""residential"" }, ""geometry"": [ { ""lat"": 49.543, ""lon"": 16.896 }, { ""lat"": 49.544, ""lon"": 16.897 } ] }
             ]
         }";
 
         var parser = new OsmOverpassParser();
         var result = parser.ParseOverpassJson(osmJson);
 
-        Assert.Single(result.Entities);
-        Assert.Equal("Kaplička", result.Entities[0].Name);
-        Assert.Single(result.Edges);
+        var chapel = Assert.Single(result.Entities, e => e.Name == "Kaplička");
+        Assert.NotNull(chapel);
+        Assert.NotEmpty(result.Edges);
         Assert.Equal("Road", result.Edges[0].Kind);
     }
 }

@@ -91,6 +91,23 @@ function renderTree(filterQuery = '') {
     container.appendChild(buildTreeNode(root, filterQuery.toLowerCase()));
 }
 
+function getEntityIcon(type) {
+    switch (type) {
+        case 'Settlement': return '🏛️';
+        case 'Building': return '🏠';
+        case 'Floor': return '📐';
+        case 'Room': return '🚪';
+        case 'Yard': return '🌳';
+        case 'LinearFeature': return '🌊';
+        case 'LinearSegment': return '💧';
+        case 'LandCover': return '🏞️';
+        case 'Place': return '📍';
+        case 'Agent': return '👤';
+        case 'Item': return '📦';
+        default: return '📍';
+    }
+}
+
 function buildTreeNode(entity, filterQuery = '') {
     const children = entitiesStore.filter(e => e.parentId === entity.id);
 
@@ -103,7 +120,8 @@ function buildTreeNode(entity, filterQuery = '') {
 
     const itemEl = document.createElement('div');
     itemEl.className = `tree-item ${selectedEntityId === entity.id ? 'selected' : ''}`;
-    itemEl.innerHTML = `<span class="type-badge">${entity.type}</span> <span>${entity.name}</span>`;
+    const icon = getEntityIcon(entity.type);
+    itemEl.innerHTML = `<span class="type-badge">${icon} ${entity.type}</span> <span>${entity.name}</span>`;
     itemEl.onclick = (e) => {
         e.stopPropagation();
         selectEntity(entity.id);
@@ -149,11 +167,17 @@ function selectEntity(id) {
     tagsBox.innerHTML = (entity.semantic?.tags || []).map(t => `<span class="tag-chip">${t}</span>`).join(' ') || '<span style="color:var(--text-muted); font-size:0.8rem;">Bez tagů</span>';
 
     const spatialKv = document.getElementById('ent-spatial-kv');
+    let relHtml = '';
+    if (entity.relations && entity.relations.length > 0) {
+        relHtml = `<span class="kv-label">Vztahy (Relations):</span><span class="kv-value">${entity.relations.map(r => `${r.kind} ➔ ${r.targetId}`).join(', ')}</span>`;
+    }
+
     spatialKv.innerHTML = `
         <span class="kv-label">Rámec:</span><span class="kv-value">${entity.spatial?.frame || 'World'}</span>
         <span class="kv-label">GPS Lat:</span><span class="kv-value">${entity.spatial?.globalAnchor?.lat || 'N/A'}</span>
         <span class="kv-label">GPS Lon:</span><span class="kv-value">${entity.spatial?.globalAnchor?.lon || 'N/A'}</span>
         <span class="kv-label">Hloubka stromu:</span><span class="kv-value">${entity.depth}</span>
+        ${relHtml}
     `;
 
     const provKv = document.getElementById('ent-prov-kv');
@@ -161,7 +185,7 @@ function selectEntity(id) {
         <span class="kv-label">Zdroj:</span><span class="kv-value">${entity.provenance?.source || 'Katastr (RÚIAN)'}</span>
         <span class="kv-label">Confidence:</span><span class="kv-value">${entity.provenance?.confidence || 1.0}</span>
         <span class="kv-label">Stav generace:</span><span class="kv-value">${entity.generation?.state || 'Verified'}</span>
-        <span class="kv-label">Metoda:</span><span class="kv-value">${entity.generation?.method || 'cadastre'}</span>
+        <span class="kv-label">Metoda:</span><span class="kv-value">${entity.generation?.method || 'osm-import'}</span>
     `;
 
     // 4. Update Children Table
@@ -225,8 +249,9 @@ function renderChildrenTable(parentId) {
 
     children.forEach(child => {
         const tr = document.createElement('tr');
+        const icon = getEntityIcon(child.type);
         tr.innerHTML = `
-            <td><strong>${child.name}</strong></td>
+            <td><strong>${icon} ${child.name}</strong></td>
             <td><span class="type-badge">${child.type}</span></td>
             <td style="font-family:var(--font-mono); font-size:0.75rem;">${child.id}</td>
             <td>${child.generation?.state || 'Verified'}</td>
@@ -263,9 +288,9 @@ function renderMapMarkers() {
                     lineCap: 'round'
                 }).addTo(map);
                 line.bindTooltip('<b>💧 Runářovský potok / Vodní tok</b>');
-            } else if (edge.kind === 'Road') {
+            } else if (edge.kind === 'Road' || edge.kind === 'Bridge' || edge.kind === 'Ford') {
                 L.polyline([p1, p2], {
-                    color: '#f59e0b', // Amber/gold for roads and streets
+                    color: edge.kind === 'Bridge' ? '#e11d48' : '#f59e0b', // Amber for roads, rose for bridges
                     weight: 3,
                     opacity: 0.8
                 }).addTo(map);
@@ -292,7 +317,9 @@ function renderMapMarkers() {
             let radius = 6;
 
             if (entity.type === 'Building') color = '#38bdf8';
-            else if (entity.type === 'Area' || entity.semantic?.tags?.includes('waterway')) { color = '#0284c7'; radius = 8; }
+            else if (entity.type === 'Area' || entity.type === 'LinearFeature' || entity.type === 'LinearSegment') { color = '#0284c7'; radius = 8; }
+            else if (entity.type === 'LandCover') { color = '#10b981'; radius = 9; }
+            else if (entity.type === 'Yard') { color = '#84cc16'; radius = 5; }
             else if (entity.type === 'Place') { color = '#a855f7'; radius = 7; }
             else if (entity.type === 'Agent') { color = '#f43f5e'; radius = 10; }
 
@@ -305,7 +332,8 @@ function renderMapMarkers() {
                 fillOpacity: 0.85
             }).addTo(map);
 
-            marker.bindTooltip(`<b>${entity.name}</b><br/>Typ: ${entity.type}`);
+            const icon = getEntityIcon(entity.type);
+            marker.bindTooltip(`<b>${icon} ${entity.name}</b><br/>Typ: ${entity.type}`);
             marker.on('click', () => selectEntity(entity.id));
         }
     });

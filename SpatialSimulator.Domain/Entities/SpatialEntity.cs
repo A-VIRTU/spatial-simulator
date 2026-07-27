@@ -3,111 +3,65 @@ using SpatialSimulator.Domain.Components;
 namespace SpatialSimulator.Domain.Entities;
 
 /// <summary>
-/// Základní doménový model prostorové entity reprezentující libovolný uzel ve stromu obsahování.
-/// Reprezentuje město, část obce, pozemek, dům, patro, místnost, nábytek, oblečení, kapsu, sirky i agenta.
-/// Motivace: Polymorfní ECS architektura umožňuje dynamicky připojovat komponenty podle úrovně detailu a potřeby.
+/// Polymorfní doménová entita reprezentující libovolný prostorový uzel v simulátoru.
+/// Motivace: Zabezpečuje jednotný datový model pro město, budovu, patro, místnost, potok, nábytek i agenta.
 /// </summary>
 public class SpatialEntity
 {
-    /// <summary>
-    /// Unikátní identifikátor entity (slug nebo ObjectId).
-    /// Motivace: Jednoznačná identifikace uzlu napříč databází a grafem.
-    /// </summary>
-    public string Id { get; set; } = Guid.NewGuid().ToString("n");
+    /// <summary>Unikátní řetězcové ID entity (napsáno jako slug nebo ObjectId).</summary>
+    public string Id { get; set; } = string.Empty;
 
-    /// <summary>
-    /// Typ entity z definovaných konstant v <see cref="SpatialEntityTypes"/>.
-    /// Motivace: Určuje sémantickou roli uzlu ve stromu.
-    /// </summary>
+    /// <summary>Typ entity podle `SpatialEntityTypes` ("Settlement", "Building", "Floor", "LinearFeature", "LinearSegment"...).</summary>
     public string Type { get; set; } = string.Empty;
 
-    /// <summary>
-    /// Lidsky čitelný název entity (např. "Čp. 23", "Kuchyň", "Zimní kabát").
-    /// Motivace: Zobrazování v UI a v LLM promptech agentů.
-    /// </summary>
+    /// <summary>Lidsky čitelný název entity.</summary>
     public string Name { get; set; } = string.Empty;
 
-    /// <summary>
-    /// Identifikátor rodičovské entity ve stromu obsahování.
-    /// Motivace: Tvoří primární stromový vztah containment (co je v čem).
-    /// </summary>
+    /// <summary>ID rodičovského uzlu v containment stromu.</summary>
     public string? ParentId { get; set; }
 
-    /// <summary>
-    /// Pole identifikátorů všech předků od kořene až po rodiče (Array of Ancestors vzor).
-    /// Motivace: Umožňuje rychlé podstromové dotazy v databázi bez nutnosti rekurzivního prolézání.
-    /// </summary>
+    /// <summary>Seznam ID všech předků od kořene k rodiči.</summary>
     public List<string> Ancestors { get; set; } = [];
 
-    /// <summary>
-    /// Materializovaná cesta reprezentující stromovou větvenou trasu (např. "/settlement_runarov/building_23/floor_1/room_2").
-    /// Motivace: Rychlé prefixové dotazy a přehledná čitelnost v logách.
-    /// </summary>
+    /// <summary>Materializovaná cesta stromem pro rychlé vyhledávání (např. "/settlement_runarov/building_cp_23").</summary>
     public string MaterializedPath { get; set; } = string.Empty;
 
-    /// <summary>
-    /// Hloubka zanoření v hierarchii stromu (0 pro kořen).
-    /// Motivace: Snadné filtrování podle úrovně detailu.
-    /// </summary>
+    /// <summary>Hloubka zanoření ve stromu (0 pro kořen).</summary>
     public int Depth { get; set; }
 
-    /// <summary>
-    /// Nepovinná prostorová komponenta (geometrická poloha a rozměry).
-    /// Motivace: Není vyžadována u malých předmětů v kapse, ale je klíčová pro budovy a místnosti.
-    /// </summary>
+    /// <summary>Pořadí uzlu mezi sourozenci (pro řazení úseků potoka nebo pater domu).</summary>
+    public int? OrderIndex { get; set; }
+
+    /// <summary>Prostorové a geometrické ukotvení entity.</summary>
     public SpatialComponent? Spatial { get; set; }
 
-    /// <summary>
-    /// Sémantická komponenta s tagy, popisem a atributy.
-    /// Motivace: Poskytuje popisný kontext pro rozhodování AI agentů.
-    /// </summary>
+    /// <summary>Sémantický popis, tagy a atributy pro LLM agenty.</summary>
     public SemanticComponent Semantic { get; set; } = new();
 
-    /// <summary>
-    /// Generační komponenta sledující stav domyšlení uzlu.
-    /// Motivace: Řídí línou on-demand generaci místností a obsahu.
-    /// </summary>
+    /// <summary>Stav líné generace podstromu (NotGenerated, Outlined, Detailed, Verified).</summary>
     public GenerationComponent Generation { get; set; } = new();
 
-    /// <summary>
-    /// Komponenta provenience definující původ dat.
-    /// Motivace: Udržuje informaci o důvěryhodnosti zdroje (katastr vs. odhad LLM).
-    /// </summary>
-    public ProvenanceComponent? Provenance { get; set; }
+    /// <summary>Provenience dat (zdroj, spolehlivost, čas extrakce).</summary>
+    public ProvenanceComponent Provenance { get; set; } = new();
 
-    /// <summary>
-    /// Nepovinná komponenta kapacity objektu.
-    /// Motivace: Stanovuje fyzické limity počtu osob nebo vkládaných předmětů.
-    /// </summary>
+    /// <summary>Kapacita objektu pro obyvatele nebo předměty.</summary>
     public CapacityComponent? Capacity { get; set; }
 
-    /// <summary>
-    /// Agentní komponenta obsahující stav agenta. Vyplňuje se pouze pokud je Type == "Agent".
-    /// Motivace: Uchovává specifická data agentního chování a polohy.
-    /// </summary>
+    /// <summary>Komponenta agenta (pouze pokud Type == SpatialEntityTypes.Agent).</summary>
     public AgentComponent? Agent { get; set; }
 
-    /// <summary>
-    /// Externí reference na okolní databáze (např. {"ruian": "12345678", "osm": "way/123"}).
-    /// Motivace: Zabezpečuje idempotenci při opakovaných importech z veřejných zdrojů.
-    /// </summary>
+    /// <summary>Nehierarchické prostorové vztahy (překryvy, sousedství, břehy potoka).</summary>
+    public List<SpatialRelation>? Relations { get; set; }
+
+    /// <summary>Externí identifikátory (RÚIAN, OSM, DIBAVOD).</summary>
     public Dictionary<string, string> ExternalRefs { get; set; } = new();
 
-    /// <summary>
-    /// Verze schématu dokumentu pro podporu budoucích migrací.
-    /// Motivace: Zajišťuje zpětnou kompatibilitu při vývoji datového modelu.
-    /// </summary>
+    /// <summary>Verze datového schématu.</summary>
     public int SchemaVersion { get; set; } = 1;
 
-    /// <summary>
-    /// Časové razítko vytvoření záznamu (UTC).
-    /// Motivace: Auditní sledování historie uložení.
-    /// </summary>
+    /// <summary>Čas vytvoření dokumentu.</summary>
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-    /// <summary>
-    /// Časové razítko poslední aktualizace záznamu (UTC).
-    /// Motivace: Sledování úprav a synchrónních změn.
-    /// </summary>
+    /// <summary>Čas poslední aktualizace dokumentu.</summary>
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 }
