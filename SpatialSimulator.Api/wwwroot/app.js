@@ -236,7 +236,7 @@ function renderChildrenTable(parentId) {
     });
 }
 
-// Render Map Markers & Road Graph Network
+// Render Map Markers, Roads, Footpaths, and Runářovský Potok Waterways
 function renderMapMarkers() {
     if (!map) return;
 
@@ -246,15 +246,54 @@ function renderMapMarkers() {
         }
     });
 
-    // Render Buildings and POIs along real Runářov streets
+    // 1. Render Roads & Waterway Edges
+    edgesStore.forEach(edge => {
+        const fromE = entitiesStore.find(e => e.id === edge.fromId);
+        const toE = entitiesStore.find(e => e.id === edge.toId);
+
+        if (fromE?.spatial?.globalAnchor && toE?.spatial?.globalAnchor) {
+            const p1 = [fromE.spatial.globalAnchor.lat, fromE.spatial.globalAnchor.lon];
+            const p2 = [toE.spatial.globalAnchor.lat, toE.spatial.globalAnchor.lon];
+
+            if (edge.kind === 'Waterway') {
+                const line = L.polyline([p1, p2], {
+                    color: '#0284c7', // Bright blue for Runářovský potok & streams
+                    weight: 4,
+                    opacity: 0.95,
+                    lineCap: 'round'
+                }).addTo(map);
+                line.bindTooltip('<b>💧 Runářovský potok / Vodní tok</b>');
+            } else if (edge.kind === 'Road') {
+                L.polyline([p1, p2], {
+                    color: '#f59e0b', // Amber/gold for roads and streets
+                    weight: 3,
+                    opacity: 0.8
+                }).addTo(map);
+            } else {
+                L.polyline([p1, p2], {
+                    color: '#64748b',
+                    weight: 1.5,
+                    opacity: 0.6
+                }).addTo(map);
+            }
+        }
+    });
+
+    // 2. Render Buildings, POIs, Water Areas & Agents
     entitiesStore.forEach(entity => {
+        // Skip waypoint nodes from circle clutter
+        if (entity.semantic?.tags?.includes('road_node') || entity.semantic?.tags?.includes('water_node')) {
+            return;
+        }
+
         if (entity.spatial?.globalAnchor) {
             const anchor = entity.spatial.globalAnchor;
             let color = '#38bdf8';
             let radius = 6;
 
             if (entity.type === 'Building') color = '#38bdf8';
-            else if (entity.type === 'Place') { color = '#a855f7'; radius = 8; }
+            else if (entity.type === 'Area' || entity.semantic?.tags?.includes('waterway')) { color = '#0284c7'; radius = 8; }
+            else if (entity.type === 'Place') { color = '#a855f7'; radius = 7; }
             else if (entity.type === 'Agent') { color = '#f43f5e'; radius = 10; }
 
             const marker = L.circleMarker([anchor.lat, anchor.lon], {
@@ -268,22 +307,6 @@ function renderMapMarkers() {
 
             marker.bindTooltip(`<b>${entity.name}</b><br/>Typ: ${entity.type}`);
             marker.on('click', () => selectEntity(entity.id));
-        }
-    });
-
-    // Render Road Network (main road and driveway connections)
-    edgesStore.forEach(edge => {
-        const fromE = entitiesStore.find(e => e.id === edge.fromId);
-        const toE = entitiesStore.find(e => e.id === edge.toId);
-        if (fromE?.spatial?.globalAnchor && toE?.spatial?.globalAnchor) {
-            const p1 = [fromE.spatial.globalAnchor.lat, fromE.spatial.globalAnchor.lon];
-            const p2 = [toE.spatial.globalAnchor.lat, toE.spatial.globalAnchor.lon];
-
-            L.polyline([p1, p2], {
-                color: edge.kind === 'Road' ? '#38bdf8' : '#64748b',
-                weight: edge.kind === 'Road' ? 3 : 1.5,
-                opacity: 0.7
-            }).addTo(map);
         }
     });
 }
